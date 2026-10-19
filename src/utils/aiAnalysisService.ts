@@ -77,34 +77,41 @@ Resume Text:
 ${cleanResume}
 `;
 
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: 'application/json'
+      const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
+      for (const model of modelsToTry) {
+        try {
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                  temperature: 0.2,
+                  responseMimeType: 'application/json'
+                }
+              })
             }
-          })
-        }
-      );
+          );
 
-      if (response.ok) {
-        const data = await response.json();
-        const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (rawContent) {
-          const parsed = extractJSON(rawContent);
-          if (parsed && typeof parsed.atsScore === 'number') {
-            return {
-              ...parsed,
-              matchScore: parsed.atsScore,
-              impactScore: Math.min(100, Math.round(parsed.atsScore * 0.95)),
-              actionVerbScore: Math.min(100, Math.round(parsed.atsScore * 0.9 + 5))
-            };
+          if (response.ok) {
+            const data = await response.json();
+            const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (rawContent) {
+              const parsed = extractJSON(rawContent);
+              if (parsed && typeof parsed.atsScore === 'number') {
+                return {
+                  ...parsed,
+                  matchScore: parsed.atsScore,
+                  impactScore: Math.min(100, Math.round(parsed.atsScore * 0.95)),
+                  actionVerbScore: Math.min(100, Math.round(parsed.atsScore * 0.9 + 5))
+                };
+              }
+            }
           }
+        } catch (mErr) {
+          console.warn(`Model ${model} attempt failed:`, mErr);
         }
       }
     } catch (err) {

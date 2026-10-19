@@ -5,18 +5,20 @@ export async function boostBulletWithGemini(
 ): Promise<string> {
   // If user provides Gemini API Key, call Gemini API
   if (apiKey && apiKey.trim().length > 10) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `You are an elite Silicon Valley Tech Recruiter and ATS Specialist.
+    const modelsToTry = ['gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
+    for (const model of modelsToTry) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `You are an elite Silicon Valley Tech Recruiter and ATS Specialist.
 Rewrite the following resume bullet point using Google's XYZ formula ("Accomplished [X] as measured by [Y], by doing [Z]").
 Target Role: ${targetRole}
 Original Bullet: "${originalBullet}"
@@ -26,21 +28,22 @@ Requirements:
 - Include realistic quantifiable metrics (% improvement, scale, latency, users, throughput).
 - Keep it concise, high-impact, single sentence, 18-35 words.
 - Return ONLY the rewritten bullet point text without quotes or explanations.`
-                  }
-                ]
-              }
-            ]
-          })
-        }
-      );
+                    }
+                  ]
+                }
+              ]
+            })
+          }
+        );
 
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-        if (text) return text.replace(/^["'•\-*]\s*/, '').replace(/["']$/, '');
+        if (response.ok) {
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (text) return text.replace(/^["'•\-*]\s*/, '').replace(/["']$/, '');
+        }
+      } catch (err) {
+        console.warn(`Model ${model} enhancement failed:`, err);
       }
-    } catch (err) {
-      console.warn('Gemini API call failed, falling back to built-in transformer', err);
     }
   }
 
