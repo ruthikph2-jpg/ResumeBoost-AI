@@ -10,6 +10,8 @@ import { RoadmapView } from './components/RoadmapView';
 import { ExportModal } from './components/ExportModal';
 import { runGeminiAnalysis } from './utils/aiAnalysisService';
 import { analyzeResume } from './utils/atsAnalyzer';
+import { SqliteHistoryView } from './components/SqliteHistoryView';
+import { saveScanToDb } from './utils/sqliteDb';
 import { GeminiAtsReport, ParsedProfile } from './types';
 import { 
   Download, 
@@ -127,14 +129,33 @@ export default function App() {
       if (report.parsedProfile) {
         setProfile(report.parsedProfile);
       }
+      // Auto-save into SQLite database
+      saveScanToDb(
+        report.parsedProfile?.name || profile.name || 'Ruthik ph',
+        ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
+        report.atsScore,
+        report.matchScore ?? report.atsScore,
+        report.summary
+      ).catch((e) => console.warn('SQLite auto-save note:', e));
+
       setTimeout(() => {
         setAnalyzing(false);
         setScannerView('results');
-        toast.success('AI ATS evaluation complete!');
+        toast.success('AI ATS evaluation complete! Saved to SQLite.');
       }, 500);
     } catch {
       clearInterval(progressTimer);
       setScanProgress(100);
+
+      // Save offline fallback score to SQLite
+      saveScanToDb(
+        profile.name || 'Ruthik ph',
+        ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
+        localAnalysis.overallScore,
+        localAnalysis.matchScore,
+        'Offline rule-based scan completed.'
+      ).catch((e) => console.warn('SQLite auto-save note:', e));
+
       setTimeout(() => {
         setAnalyzing(false);
         setScannerView('results');
@@ -518,19 +539,22 @@ export default function App() {
             </div>
           )}
 
-          {/* ─── TAB: HISTORY & SETTINGS ─── */}
-          {(activeTab === 'history' || activeTab === 'settings') && (
+          {/* ─── TAB: SQLITE HISTORY ─── */}
+          {activeTab === 'history' && (
+            <SqliteHistoryView />
+          )}
+
+          {/* ─── TAB: SETTINGS ─── */}
+          {activeTab === 'settings' && (
             <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm space-y-4 max-w-2xl mx-auto text-center py-12">
               <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
                 <Sparkles className="w-6 h-6" />
               </div>
               <h3 className="text-base font-extrabold text-slate-900">
-                {activeTab === 'history' ? 'Resume Scan History' : 'Application Settings'}
+                Application Settings & Database Engine
               </h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-                {activeTab === 'history'
-                  ? 'Past resume analyses and exported files are saved locally in your browser session for quick access.'
-                  : 'ResumeBoost AI is operating in active client-side mode with Google Gemini 3.5 integration.'}
+                ResumeBoost AI utilizes embedded <strong>SQLite 3.x WebAssembly</strong> for persistent scan storage and Google Gemini 3.5 AI for intelligent candidate evaluation.
               </p>
               <div className="pt-2">
                 <button
