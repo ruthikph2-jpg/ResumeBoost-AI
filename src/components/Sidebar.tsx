@@ -10,15 +10,18 @@ import {
   LogOut,
   Sparkles
 } from 'lucide-react';
+import { User } from '../utils/sqliteDb';
 
 export type NavTab = 'dashboard' | 'analyze' | 'create' | 'modify' | 'history' | 'roadmaps' | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
+  user: User | null;
+  onLogout: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user, onLogout }) => {
   const menuItems = [
     { id: 'dashboard' as NavTab, label: 'Dashboard', icon: LayoutGrid },
     { id: 'analyze' as NavTab, label: 'Analyze', icon: FileText },
@@ -28,6 +31,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     { id: 'roadmaps' as NavTab, label: 'Roadmaps', icon: Compass },
     { id: 'settings' as NavTab, label: 'Settings', icon: Settings },
   ];
+
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'R';
+  const displayName = user?.name || 'Ruthik ph';
+  const roleSubtitle = user?.auth_provider === 'google' 
+    ? 'Google Account' 
+    : user?.auth_provider === 'guest'
+    ? 'Guest Explorer'
+    : 'CSE • Java Stack';
 
   return (
     <aside className="w-64 bg-white border-r border-slate-200/80 min-h-screen flex flex-col justify-between shrink-0 select-none">
@@ -78,21 +89,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       {/* User Profile Pill at Bottom */}
       <div className="p-4 border-t border-slate-100">
         <div className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 border border-slate-200/60 hover:bg-slate-100/70 transition-colors">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
-              R
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+              {userInitial}
             </div>
-            <div>
-              <div className="font-bold text-xs text-slate-800 leading-tight">Ruthik ph</div>
-              <div className="text-[11px] text-indigo-600 font-medium">CSE • Java Stack</div>
+            <div className="truncate">
+              <div className="font-bold text-xs text-slate-800 leading-tight truncate">{displayName}</div>
+              <div className="text-[10px] text-indigo-600 font-medium truncate">{roleSubtitle}</div>
             </div>
           </div>
           <button 
-            onClick={() => setActiveTab('analyze')} 
-            className="text-slate-400 hover:text-indigo-600 p-1.5 rounded-lg transition-colors"
-            title="Switch to scan"
+            onClick={onLogout} 
+            className="text-slate-400 hover:text-red-600 p-1.5 rounded-lg transition-colors shrink-0"
+            title="Sign out / Switch account"
           >
-            <Sparkles className="w-4 h-4" />
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
         <div className="mt-2.5 px-1 text-[10px] text-slate-400 text-center font-medium">

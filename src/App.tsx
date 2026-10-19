@@ -11,7 +11,8 @@ import { ExportModal } from './components/ExportModal';
 import { runGeminiAnalysis } from './utils/aiAnalysisService';
 import { analyzeResume } from './utils/atsAnalyzer';
 import { SqliteHistoryView } from './components/SqliteHistoryView';
-import { saveScanToDb } from './utils/sqliteDb';
+import { saveScanToDb, getCurrentSession, clearCurrentSession, User } from './utils/sqliteDb';
+import { AuthGateModal } from './components/AuthGateModal';
 import { GeminiAtsReport, ParsedProfile } from './types';
 import { 
   Download, 
@@ -58,6 +59,9 @@ BugShield - AI Bug Detector & Auto-Fixer
 const DEFAULT_JOB = ROLE_TEMPLATES.java_backend.description;
 
 export default function App() {
+  // User Authentication Session State backed by SQLite
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentSession());
+
   const [activeTab, setActiveTab] = useState<NavTab>('roadmaps'); // Default to roadmaps or analyze
   const [scannerView, setScannerView] = useState<'landing' | 'results'>('landing');
   const [selectedRole, setSelectedRole] = useState('java_backend');
@@ -131,7 +135,7 @@ export default function App() {
       }
       // Auto-save into SQLite database
       saveScanToDb(
-        report.parsedProfile?.name || profile.name || 'Ruthik ph',
+        report.parsedProfile?.name || currentUser?.name || profile.name || 'Ruthik ph',
         ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
         report.atsScore,
         report.matchScore ?? report.atsScore,
@@ -149,7 +153,7 @@ export default function App() {
 
       // Save offline fallback score to SQLite
       saveScanToDb(
-        profile.name || 'Ruthik ph',
+        currentUser?.name || profile.name || 'Ruthik ph',
         ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
         localAnalysis.overallScore,
         localAnalysis.matchScore,
@@ -201,8 +205,33 @@ export default function App() {
         }}
       />
 
+      {/* SQLite-Backed Authentication Gate Modal */}
+      {!currentUser && (
+        <AuthGateModal
+          onSuccess={(loggedInUser) => {
+            setCurrentUser(loggedInUser);
+            if (loggedInUser.name && loggedInUser.auth_provider !== 'guest') {
+              setProfile((prev) => ({
+                ...prev,
+                name: loggedInUser.name,
+                email: loggedInUser.email || prev.email,
+              }));
+            }
+          }}
+        />
+      )}
+
       {/* Clean Left Sidebar Navigation (Matching Image 2) */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        user={currentUser}
+        onLogout={() => {
+          clearCurrentSession();
+          setCurrentUser(null);
+          toast.success('Signed out successfully.');
+        }}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
