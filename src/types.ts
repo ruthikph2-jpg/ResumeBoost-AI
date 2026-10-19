@@ -13,6 +13,32 @@ export interface AnalysisResult {
   suggestions: string[];
 }
 
+export interface ParsedProfile {
+  name: string;
+  title: string;
+  email: string;
+  phone: string;
+  location: string;
+  summary: string;
+  skills: string;
+  experience: string;
+  education: string;
+}
+
+export interface GeminiAtsReport {
+  atsScore: number;
+  summary: string;
+  skills: string[];
+  missingSkills: string[];
+  strengths: string[];
+  keyHighlights: string[];
+  improvements: string[];
+  matchScore?: number;
+  impactScore?: number;
+  actionVerbScore?: number;
+  parsedProfile: ParsedProfile;
+}
+
 export interface BulletAnalysis {
   id: string;
   original: string;
@@ -29,4 +55,12 @@ export interface JobPreset {
   category: string;
   keywords: string[];
   description: string;
+}
+
+export interface RoadmapMilestone {
+  level: number;
+  title: string;
+  description: string;
+  topics: string[];
+  projectIdea: string;
 }
