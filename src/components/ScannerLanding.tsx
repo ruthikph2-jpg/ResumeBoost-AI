@@ -25,6 +25,7 @@ export interface ScannerLandingProps {
   resumeText: string;
   setResumeText: (text: string) => void;
   onStartScan: () => void;
+  onFileProcessed?: (meta: { name: string; format: 'PDF' | 'DOCX' | 'TXT' | 'IMAGE'; size: string }) => void;
   analyzing: boolean;
   scanProgress: number;
   scanStage: string;
@@ -95,6 +96,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
   resumeText,
   setResumeText,
   onStartScan,
+  onFileProcessed,
   analyzing,
   scanProgress,
   scanStage,
@@ -123,7 +125,9 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
     }
 
     const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+    const fileFormat: 'PDF' | 'IMAGE' | 'TXT' = isPdf ? 'PDF' : isImage ? 'IMAGE' : 'TXT';
     setUploadedFile({ name: file.name, size: sizeFormatted });
+    onFileProcessed?.({ name: file.name, format: fileFormat, size: sizeFormatted });
 
     if (isImage) {
       // 1. Image upload: Run Tesseract OCR directly
@@ -196,6 +200,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
 
   const handleLoadSample = () => {
     setUploadedFile({ name: 'Ruthik_FullStack_Resume.pdf', size: '142 KB' });
+    onFileProcessed?.({ name: 'Ruthik_FullStack_Resume.pdf', format: 'PDF', size: '142 KB' });
     setResumeText(SAMPLE_JAVA_RESUME);
     handleRoleSelect('java_backend');
     toast.success("Loaded Ruthik's Java Full-Stack Resume!");

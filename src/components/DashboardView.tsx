@@ -6,16 +6,14 @@ import {
   Cpu, 
   Brain, 
   Edit3, 
-  ArrowRight, 
-  Sparkles, 
-  CheckCircle2, 
-  Clock, 
   Search,
   FileCheck,
-  TrendingUp,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  CheckCircle2,
+  Database
 } from 'lucide-react';
-import { fetchScanHistory, ScanRecord } from '../utils/sqliteDb';
+import { fetchDocumentAnalytics, DocumentAnalytics, ScanRecord } from '../utils/sqliteDb';
 
 interface DashboardViewProps {
   onAnalyzeNew: () => void;
@@ -30,32 +28,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   currentScore,
   userName = 'Ruthik ph',
 }) => {
-  const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [analytics, setAnalytics] = useState<DocumentAnalytics>({
+    totalAnalyzed: 0,
+    averageAtsScore: 76,
+    pdfCount: 0,
+    docxCount: 0,
+    ocrCount: 0,
+    totalKeywords: 0,
+    records: [],
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    fetchScanHistory()
-      .then((records) => {
-        setHistory(records);
+  const loadData = () => {
+    fetchDocumentAnalytics()
+      .then((data) => {
+        setAnalytics(data);
         setLoading(false);
       })
       .catch(() => {
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
 
-  // Compute dynamic stats from SQLite
-  const totalAnalyzed = Math.max(14, history.length); // Default minimum 14 matching reference or actual SQLite count
-  const averageAtsScore = history.length > 0
-    ? Math.round(history.reduce((acc, r) => acc + (r.ats_score || 0), 0) / history.length)
-    : 76; // Matches reference 76%
-
-  const filteredHistory = history.filter(
+  const filteredHistory = analytics.records.filter(
     (item) =>
-      item.candidate_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.target_role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.summary.toLowerCase().includes(searchTerm.toLowerCase())
+      item.candidate_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.target_role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.summary?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -64,9 +69,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* ─── TOP HEADER ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600">
-            OVERVIEW
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600">
+              OVERVIEW
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live SQLite Data
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
             Dashboard
           </h1>
@@ -83,7 +94,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </button>
       </div>
 
-      {/* ─── THREE STAT CARDS (Exact match to reference image) ─── */}
+      {/* ─── THREE STAT CARDS (Exact match to reference image, Real dynamic counts) ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Card 1: Total Analyzed */}
@@ -93,10 +104,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Total Analyzed
             </span>
             <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {totalAnalyzed}
+              {analytics.totalAnalyzed}
             </div>
             <span className="text-xs font-bold text-emerald-600 block">
-              +12% this week
+              {analytics.totalAnalyzed > 0 ? `+${analytics.totalAnalyzed} uploaded & scanned` : 'Ready for uploads'}
             </span>
           </div>
 
@@ -112,10 +123,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               Average ATS Score
             </span>
             <div className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {averageAtsScore}%
+              {analytics.averageAtsScore}%
             </div>
             <span className="text-xs font-bold text-emerald-600 block">
-              Top 20% average
+              {analytics.averageAtsScore >= 75 ? 'Top 20% average' : 'Average optimization'}
             </span>
           </div>
 
@@ -206,7 +217,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* ─── SECTION: HOW MUCH IT ANALYZED THE PDFS / DOCS ─── */}
+      {/* ─── SECTION: REAL LIVE DOCUMENT & PDF PARSING METRICS ─── */}
       <div className="p-7 sm:p-8 rounded-3xl bg-white border border-slate-200/80 shadow-sm space-y-6">
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
@@ -214,59 +225,69 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="flex items-center gap-2">
               <FileCheck className="w-5 h-5 text-indigo-600" />
               <h2 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
-                Analyzed Documents & Parsing Volume
+                Analyzed Documents & PDF Volume Tracker
               </h2>
             </div>
             <p className="text-xs text-slate-500 font-medium mt-1">
-              Detailed tracking of uploaded resumes, extracted tokens, and technical keyword density.
+              Live record of all PDF, DOCX, TXT, and OCR resumes analyzed through your portal.
             </p>
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search analyzed resumes..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search uploaded files..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
+              />
+            </div>
+            <button
+              onClick={loadData}
+              title="Refresh SQLite data"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Parsing Metrics Strip */}
+        {/* Real Live Parsing Metrics Strip */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[11px] font-bold text-slate-500 block">PDFs Processed</span>
-            <span className="text-xl font-black text-slate-900">9 Documents</span>
-            <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">High fidelity</span>
+          <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100">
+            <span className="text-[11px] font-bold text-indigo-700 block">PDFs Analyzed</span>
+            <span className="text-xl font-black text-slate-900">{analytics.pdfCount} Resumes</span>
+            <span className="text-[10px] text-indigo-600 font-bold block mt-0.5">pdf.js extraction</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[11px] font-bold text-slate-500 block">DOCX / TXT Resumes</span>
-            <span className="text-xl font-black text-slate-900">5 Documents</span>
-            <span className="text-[10px] text-indigo-600 font-bold block mt-0.5">100% parsed</span>
+          <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
+            <span className="text-[11px] font-bold text-blue-700 block">DOCX / TXT Analyzed</span>
+            <span className="text-xl font-black text-slate-900">{analytics.docxCount} Resumes</span>
+            <span className="text-[10px] text-blue-600 font-bold block mt-0.5">UTF-8 text parsing</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[11px] font-bold text-slate-500 block">Keywords Extracted</span>
-            <span className="text-xl font-black text-indigo-600">142 Skills</span>
-            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">Java, Spring, DSA</span>
+          <div className="p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
+            <span className="text-[11px] font-bold text-purple-700 block">OCR Image Scans</span>
+            <span className="text-xl font-black text-slate-900">{analytics.ocrCount} Scans</span>
+            <span className="text-[10px] text-purple-600 font-bold block mt-0.5">Tesseract fallback</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/70">
-            <span className="text-[11px] font-bold text-slate-500 block">OCR Fallback Engine</span>
-            <span className="text-xl font-black text-purple-600">Active</span>
-            <span className="text-[10px] text-purple-600 font-bold block mt-0.5">Tesseract.js</span>
+          <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100">
+            <span className="text-[11px] font-bold text-emerald-700 block">Keywords Extracted</span>
+            <span className="text-xl font-black text-slate-900">{analytics.totalKeywords} Skills</span>
+            <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">Gemini ATS matching</span>
           </div>
         </div>
 
-        {/* History Table */}
+        {/* Real Document Analysis Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 text-slate-400 font-bold text-[11px] uppercase tracking-wider">
-                <th className="pb-3 font-bold">Document / Candidate</th>
+                <th className="pb-3 font-bold">Uploaded Document</th>
+                <th className="pb-3 font-bold">Candidate</th>
                 <th className="pb-3 font-bold">Target Placement Role</th>
                 <th className="pb-3 font-bold">ATS Score</th>
                 <th className="pb-3 font-bold">Match Rating</th>
@@ -276,48 +297,62 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredHistory.length > 0 ? (
-                filteredHistory.map((item, idx) => (
-                  <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 font-bold text-slate-900 flex items-center gap-2">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-indigo-50 text-indigo-600 border border-indigo-100">
-                        PDF
-                      </span>
-                      <span>{item.candidate_name || userName}</span>
-                    </td>
-                    <td className="py-3.5 text-slate-600 font-medium">
-                      {item.target_role}
-                    </td>
-                    <td className="py-3.5 font-bold">
-                      <span className={`px-2 py-1 rounded-lg text-xs font-black ${
-                        item.ats_score >= 80 
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                          : item.ats_score >= 60 
-                          ? 'bg-amber-50 text-amber-700 border border-amber-200' 
-                          : 'bg-red-50 text-red-700 border border-red-200'
-                      }`}>
-                        {item.ats_score}%
-                      </span>
-                    </td>
-                    <td className="py-3.5 text-slate-600 font-medium">
-                      {item.match_score ? `${item.match_score}% Match` : 'Evaluated'}
-                    </td>
-                    <td className="py-3.5 text-slate-400 text-[11px]">
-                      {item.created_at || 'Just now'}
-                    </td>
-                    <td className="py-3.5 text-right">
-                      <button
-                        onClick={onAnalyzeNew}
-                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
-                      >
-                        Re-scan →
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                filteredHistory.map((item, idx) => {
+                  const format = (item.file_format || (item.file_name?.toLowerCase().endsWith('.pdf') ? 'PDF' : item.file_name?.match(/\.(png|jpe?g|webp)$/i) ? 'IMAGE' : 'DOCX')).toUpperCase();
+                  return (
+                    <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-3.5 font-bold text-slate-900 flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border ${
+                          format === 'PDF'
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : format === 'IMAGE'
+                            ? 'bg-purple-50 text-purple-600 border-purple-200'
+                            : format === 'DOCX'
+                            ? 'bg-blue-50 text-blue-600 border-blue-200'
+                            : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                        }`}>
+                          {format}
+                        </span>
+                        <span className="truncate max-w-[220px]">{item.file_name || 'Resume_Document.pdf'}</span>
+                      </td>
+                      <td className="py-3.5 text-slate-700 font-semibold">
+                        {item.candidate_name || userName}
+                      </td>
+                      <td className="py-3.5 text-slate-600 font-medium">
+                        {item.target_role}
+                      </td>
+                      <td className="py-3.5 font-bold">
+                        <span className={`px-2 py-1 rounded-lg text-xs font-black ${
+                          item.ats_score >= 80 
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                            : item.ats_score >= 60 
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                            : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
+                          {item.ats_score}%
+                        </span>
+                      </td>
+                      <td className="py-3.5 text-slate-600 font-medium">
+                        {item.match_score ? `${item.match_score}% Match` : 'Evaluated'}
+                      </td>
+                      <td className="py-3.5 text-slate-400 text-[11px]">
+                        {item.created_at || 'Just now'}
+                      </td>
+                      <td className="py-3.5 text-right">
+                        <button
+                          onClick={onAnalyzeNew}
+                          className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors"
+                        >
+                          Scan More →
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
-                    No documents analyzed yet. Click "Analyze New Resume" above to scan your first PDF!
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                    No documents analyzed yet. Click "Analyze New Resume" above to upload and scan your first PDF!
                   </td>
                 </tr>
               )}

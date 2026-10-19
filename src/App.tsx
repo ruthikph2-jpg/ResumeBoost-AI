@@ -74,6 +74,15 @@ export default function App() {
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStage, setScanStage] = useState('');
   const [showRawResumeToggle, setShowRawResumeToggle] = useState(false);
+  const [uploadedFileMeta, setUploadedFileMeta] = useState<{
+    name: string;
+    format: 'PDF' | 'DOCX' | 'TXT' | 'IMAGE';
+    size: string;
+  }>({
+    name: 'Ruthik_ph_Java_Resume.pdf',
+    format: 'PDF',
+    size: '142 KB',
+  });
 
   // Gemini AI Report State
   const [aiReport, setAiReport] = useState<GeminiAtsReport | null>(null);
@@ -134,13 +143,17 @@ export default function App() {
       if (report.parsedProfile) {
         setProfile(report.parsedProfile);
       }
-      // Auto-save into SQLite database
+      // Auto-save into SQLite database with full file metadata
       saveScanToDb(
         report.parsedProfile?.name || currentUser?.name || profile.name || 'Ruthik ph',
         ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
         report.atsScore,
         report.matchScore ?? report.atsScore,
-        report.summary
+        report.summary,
+        uploadedFileMeta.name,
+        uploadedFileMeta.format,
+        localAnalysis.wordCount,
+        localAnalysis.matchedKeywords.length
       ).catch((e) => console.warn('SQLite auto-save note:', e));
 
       setTimeout(() => {
@@ -152,13 +165,17 @@ export default function App() {
       clearInterval(progressTimer);
       setScanProgress(100);
 
-      // Save offline fallback score to SQLite
+      // Save offline fallback score to SQLite with file metadata
       saveScanToDb(
         currentUser?.name || profile.name || 'Ruthik ph',
         ROLE_TEMPLATES[selectedRole]?.title || 'Java Developer',
         localAnalysis.overallScore,
         localAnalysis.matchScore,
-        'Offline rule-based scan completed.'
+        'Offline rule-based scan completed.',
+        uploadedFileMeta.name,
+        uploadedFileMeta.format,
+        localAnalysis.wordCount,
+        localAnalysis.matchedKeywords.length
       ).catch((e) => console.warn('SQLite auto-save note:', e));
 
       setTimeout(() => {
@@ -282,6 +299,7 @@ export default function App() {
                   resumeText={resumeText}
                   setResumeText={setResumeText}
                   onStartScan={handleStartScan}
+                  onFileProcessed={setUploadedFileMeta}
                   analyzing={analyzing}
                   scanProgress={scanProgress}
                   scanStage={scanStage}

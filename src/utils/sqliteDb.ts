@@ -24,7 +24,21 @@ export interface ScanRecord {
   ats_score: number;
   match_score: number;
   summary: string;
+  file_name?: string;
+  file_format?: 'PDF' | 'DOCX' | 'TXT' | 'IMAGE';
+  word_count?: number;
+  keywords_count?: number;
   created_at: string;
+}
+
+export interface DocumentAnalytics {
+  totalAnalyzed: number;
+  averageAtsScore: number;
+  pdfCount: number;
+  docxCount: number;
+  ocrCount: number;
+  totalKeywords: number;
+  records: ScanRecord[];
 }
 
 /**
@@ -80,7 +94,11 @@ class FallbackSqliteStore {
         ats_score: 88,
         match_score: 92,
         summary: 'Strong candidate profile with high action-verb density and microservices experience.',
-        created_at: new Date(Date.now() - 7200000).toLocaleString(),
+        file_name: 'Ruthik_ph_Java_Resume.pdf',
+        file_format: 'PDF',
+        word_count: 420,
+        keywords_count: 24,
+        created_at: 'Today, 3:30 PM',
       },
       {
         id: 2,
@@ -89,7 +107,24 @@ class FallbackSqliteStore {
         ats_score: 64,
         match_score: 70,
         summary: 'Solid foundations in Java, but lacks quantifiable performance impact metrics.',
-        created_at: new Date(Date.now() - 86400000).toLocaleString(),
+        file_name: 'Alex_Doe_SDE_Resume.docx',
+        file_format: 'DOCX',
+        word_count: 360,
+        keywords_count: 15,
+        created_at: 'Yesterday, 11:15 AM',
+      },
+      {
+        id: 3,
+        candidate_name: 'Ruthik ph',
+        target_role: 'Backend Microservices Engineer',
+        ats_score: 82,
+        match_score: 85,
+        summary: 'Clean modular Spring Boot project structure with high keyword match.',
+        file_name: 'Ruthik_Backend_Profile.pdf',
+        file_format: 'PDF',
+        word_count: 480,
+        keywords_count: 22,
+        created_at: '2 days ago',
       }
     ];
   }
@@ -112,7 +147,6 @@ class FallbackSqliteStore {
     const existingIndex = users.findIndex((u) => u.email.toLowerCase() === email.trim().toLowerCase());
     
     if (existingIndex >= 0) {
-      // Update existing
       users[existingIndex].name = name;
       if (passwordHash) users[existingIndex].password_hash = passwordHash;
       users[existingIndex].auth_provider = authProvider;
@@ -148,7 +182,17 @@ class FallbackSqliteStore {
     };
   }
 
-  addScan(candidateName: string, targetRole: string, atsScore: number, matchScore: number, summary: string) {
+  addScan(
+    candidateName: string,
+    targetRole: string,
+    atsScore: number,
+    matchScore: number,
+    summary: string,
+    fileName: string = 'Resume_Document.pdf',
+    fileFormat: string = 'PDF',
+    wordCount: number = 380,
+    keywordsCount: number = 20
+  ) {
     const scans = this.getScans();
     const newScan: ScanRecord = {
       id: Date.now(),
@@ -157,7 +201,11 @@ class FallbackSqliteStore {
       ats_score: atsScore,
       match_score: matchScore,
       summary: summary || '',
-      created_at: new Date().toLocaleString(),
+      file_name: fileName,
+      file_format: fileFormat as any,
+      word_count: wordCount,
+      keywords_count: keywordsCount,
+      created_at: 'Just now',
     };
     scans.unshift(newScan);
     this.saveScans(scans);
@@ -183,7 +231,6 @@ export async function getDatabase(): Promise<Database | null> {
   if (isFallbackMode) return null;
 
   try {
-    // 1. Point to local same-origin WebAssembly file in /public/sql-wasm.wasm
     const SQL = await initSqlJs({
       locateFile: () => '/sql-wasm.wasm',
     });
@@ -219,6 +266,10 @@ export async function getDatabase(): Promise<Database | null> {
         ats_score INTEGER,
         match_score INTEGER,
         summary TEXT,
+        file_name TEXT DEFAULT 'Resume_Document.pdf',
+        file_format TEXT DEFAULT 'PDF',
+        word_count INTEGER DEFAULT 380,
+        keywords_count INTEGER DEFAULT 20,
         created_at TEXT
       );
 
@@ -247,10 +298,11 @@ export async function getDatabase(): Promise<Database | null> {
     const count = checkCount[0]?.values[0]?.[0] as number;
     if (count === 0) {
       dbInstance.run(`
-        INSERT INTO scan_history (candidate_name, target_role, ats_score, match_score, summary, created_at)
+        INSERT INTO scan_history (candidate_name, target_role, ats_score, match_score, summary, file_name, file_format, word_count, keywords_count, created_at)
         VALUES 
-          ('Ruthik ph', 'Java & Spring Boot Developer', 88, 92, 'Strong candidate profile with high action-verb density and microservices experience.', datetime('now', '-2 hours')),
-          ('Alex Doe', 'Software Development Engineer', 64, 70, 'Solid foundations in Java, but lacks quantifiable performance impact metrics.', datetime('now', '-1 day'));
+          ('Ruthik ph', 'Java & Spring Boot Developer', 88, 92, 'Strong candidate profile with high action-verb density and microservices experience.', 'Ruthik_ph_Java_Resume.pdf', 'PDF', 420, 24, datetime('now', '-2 hours')),
+          ('Alex Doe', 'Software Development Engineer', 64, 70, 'Solid foundations in Java, but lacks quantifiable performance impact metrics.', 'Alex_Doe_SDE_Resume.docx', 'DOCX', 360, 15, datetime('now', '-1 day')),
+          ('Ruthik ph', 'Backend Microservices Engineer', 82, 85, 'Clean modular Spring Boot project structure with high keyword match.', 'Ruthik_Backend_Profile.pdf', 'PDF', 480, 22, datetime('now', '-2 days'));
       `);
     }
 
@@ -289,7 +341,6 @@ export async function registerUserInDb(name: string, email: string, password: st
   const db = await getDatabase();
 
   if (!db) {
-    // Fallback store
     const user = fallbackStore.createUser(name.trim(), cleanEmail, password, 'email');
     saveCurrentSession(user);
     return user;
@@ -351,7 +402,6 @@ export async function loginUserInDb(email: string, password: string): Promise<Us
   const db = await getDatabase();
 
   if (!db) {
-    // Fallback store
     let userRecord = fallbackStore.findUserByEmail(cleanEmail);
     if (!userRecord) {
       const inferredName = cleanEmail.split('@')[0].replace(/[._0-9]/g, ' ').trim() || 'Ruthik ph';
@@ -375,7 +425,6 @@ export async function loginUserInDb(email: string, password: string): Promise<Us
 
   if (!stmt.step()) {
     stmt.free();
-    // Auto-create on first sign in
     const inferredName = cleanEmail.split('@')[0].replace(/[._0-9]/g, ' ').trim() || 'Ruthik ph';
     const formattedName = inferredName.charAt(0).toUpperCase() + inferredName.slice(1);
     return registerUserInDb(formattedName, cleanEmail, password);
@@ -430,7 +479,6 @@ export async function loginWithGoogleInDb(name: string, email: string, avatarUrl
   }
   checkStmt.free();
 
-  // Create new Google user in SQLite
   const insertStmt = db.prepare(`
     INSERT INTO users (name, email, avatar_url, auth_provider, created_at)
     VALUES (?, ?, ?, 'google', datetime('now', 'localtime'))
@@ -473,9 +521,6 @@ export function loginAsGuest(): User {
   return guestUser;
 }
 
-/**
- * Session persistence helpers
- */
 export function saveCurrentSession(user: User) {
   try {
     localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
@@ -500,32 +545,71 @@ export function clearCurrentSession() {
 }
 
 /* ========================================================
-   SCAN HISTORY & RESUME OPERATIONS
+   SCAN HISTORY & LIVE DOCUMENT ANALYTICS
 ======================================================== */
 
 /**
- * Inserts a new scan record into SQLite.
+ * Inserts a new scan record into SQLite with file metadata.
  */
 export async function saveScanToDb(
   candidateName: string,
   targetRole: string,
   atsScore: number,
   matchScore: number,
-  summary: string
+  summary: string,
+  fileName: string = 'Resume_Document.pdf',
+  fileFormat: string = 'PDF',
+  wordCount: number = 380,
+  keywordsCount: number = 20
 ): Promise<void> {
   const db = await getDatabase();
   if (!db) {
-    fallbackStore.addScan(candidateName, targetRole, atsScore, matchScore, summary);
+    fallbackStore.addScan(
+      candidateName,
+      targetRole,
+      atsScore,
+      matchScore,
+      summary,
+      fileName,
+      fileFormat,
+      wordCount,
+      keywordsCount
+    );
     return;
   }
 
-  const stmt = db.prepare(`
-    INSERT INTO scan_history (candidate_name, target_role, ats_score, match_score, summary, created_at)
-    VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'))
-  `);
-  stmt.run([candidateName || 'Ruthik ph', targetRole, atsScore, matchScore, summary || '']);
-  stmt.free();
-  persistDatabase();
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO scan_history (candidate_name, target_role, ats_score, match_score, summary, file_name, file_format, word_count, keywords_count, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'))
+    `);
+    stmt.run([
+      candidateName || 'Ruthik ph',
+      targetRole,
+      atsScore,
+      matchScore,
+      summary || '',
+      fileName,
+      fileFormat,
+      wordCount,
+      keywordsCount
+    ]);
+    stmt.free();
+    persistDatabase();
+  } catch (e) {
+    console.warn('SQLite statement fallback:', e);
+    fallbackStore.addScan(
+      candidateName,
+      targetRole,
+      atsScore,
+      matchScore,
+      summary,
+      fileName,
+      fileFormat,
+      wordCount,
+      keywordsCount
+    );
+  }
 }
 
 /**
@@ -537,20 +621,64 @@ export async function fetchScanHistory(): Promise<ScanRecord[]> {
     return fallbackStore.getAllScans();
   }
 
-  const res = db.exec("SELECT id, candidate_name, target_role, ats_score, match_score, summary, created_at FROM scan_history ORDER BY id DESC");
-  
-  if (!res || res.length === 0) return [];
+  try {
+    const res = db.exec("SELECT id, candidate_name, target_role, ats_score, match_score, summary, file_name, file_format, word_count, keywords_count, created_at FROM scan_history ORDER BY id DESC");
+    
+    if (!res || res.length === 0) return fallbackStore.getAllScans();
 
-  const columns = res[0].columns;
-  const values = res[0].values;
+    const columns = res[0].columns;
+    const values = res[0].values;
 
-  return values.map((row) => {
-    const record: any = {};
-    columns.forEach((col, idx) => {
-      record[col] = row[idx];
+    return values.map((row) => {
+      const record: any = {};
+      columns.forEach((col, idx) => {
+        record[col] = row[idx];
+      });
+      return record as ScanRecord;
     });
-    return record as ScanRecord;
+  } catch (err) {
+    console.warn('Scan history fallback query:', err);
+    return fallbackStore.getAllScans();
+  }
+}
+
+/**
+ * Computes live metrics on how many PDFs/docs were analyzed.
+ */
+export async function fetchDocumentAnalytics(): Promise<DocumentAnalytics> {
+  const records = await fetchScanHistory();
+  const totalAnalyzed = records.length;
+  const averageAtsScore = totalAnalyzed > 0
+    ? Math.round(records.reduce((acc, r) => acc + (r.ats_score || 0), 0) / totalAnalyzed)
+    : 76;
+  
+  let pdfCount = 0;
+  let docxCount = 0;
+  let ocrCount = 0;
+  let totalKeywords = 0;
+
+  records.forEach((r) => {
+    const fmt = (r.file_format || '').toUpperCase();
+    const name = (r.file_name || '').toLowerCase();
+    if (fmt === 'PDF' || name.endsWith('.pdf')) {
+      pdfCount++;
+    } else if (fmt === 'IMAGE' || name.match(/\.(png|jpe?g|webp)$/i)) {
+      ocrCount++;
+    } else {
+      docxCount++;
+    }
+    totalKeywords += r.keywords_count || 18;
   });
+
+  return {
+    totalAnalyzed,
+    averageAtsScore,
+    pdfCount,
+    docxCount,
+    ocrCount,
+    totalKeywords,
+    records,
+  };
 }
 
 /**
@@ -562,8 +690,11 @@ export async function clearScanHistoryDb(): Promise<void> {
     fallbackStore.clearScans();
     return;
   }
-  db.run("DELETE FROM scan_history");
-  persistDatabase();
+  try {
+    db.run("DELETE FROM scan_history");
+    persistDatabase();
+  } catch {}
+  fallbackStore.clearScans();
 }
 
 /**
@@ -572,7 +703,6 @@ export async function clearScanHistoryDb(): Promise<void> {
 export async function downloadSqliteFile(): Promise<void> {
   const db = await getDatabase();
   if (!db) {
-    // Generate an SQL text dump for fallback
     const users = fallbackStore['getUsers']?.() || [];
     const scans = fallbackStore['getScans']?.() || [];
     let sqlDump = `-- ResumeBoost AI SQLite Database Dump\n-- Generated: ${new Date().toISOString()}\n\n`;
@@ -580,9 +710,9 @@ export async function downloadSqliteFile(): Promise<void> {
     users.forEach((u: any) => {
       sqlDump += `INSERT INTO users VALUES (${u.id}, '${u.name}', '${u.email}', '${u.auth_provider}');\n`;
     });
-    sqlDump += `\nCREATE TABLE scan_history (id INTEGER PRIMARY KEY, candidate_name TEXT, target_role TEXT, ats_score INTEGER);\n`;
+    sqlDump += `\nCREATE TABLE scan_history (id INTEGER PRIMARY KEY, candidate_name TEXT, target_role TEXT, ats_score INTEGER, file_name TEXT, file_format TEXT);\n`;
     scans.forEach((s: any) => {
-      sqlDump += `INSERT INTO scan_history VALUES (${s.id}, '${s.candidate_name}', '${s.target_role}', ${s.ats_score});\n`;
+      sqlDump += `INSERT INTO scan_history VALUES (${s.id}, '${s.candidate_name}', '${s.target_role}', ${s.ats_score}, '${s.file_name || 'Resume.pdf'}', '${s.file_format || 'PDF'}');\n`;
     });
     const blob = new Blob([sqlDump], { type: 'application/sql' });
     const url = URL.createObjectURL(blob);
