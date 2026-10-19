@@ -11,6 +11,7 @@ import { ExportModal } from './components/ExportModal';
 import { runGeminiAnalysis } from './utils/aiAnalysisService';
 import { analyzeResume } from './utils/atsAnalyzer';
 import { SqliteHistoryView } from './components/SqliteHistoryView';
+import { DashboardView } from './components/DashboardView';
 import { saveScanToDb, getCurrentSession, clearCurrentSession, User } from './utils/sqliteDb';
 import { AuthGateModal } from './components/AuthGateModal';
 import { GeminiAtsReport, ParsedProfile } from './types';
@@ -62,7 +63,7 @@ export default function App() {
   // User Authentication Session State backed by SQLite
   const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentSession());
 
-  const [activeTab, setActiveTab] = useState<NavTab>('roadmaps'); // Default to roadmaps or analyze
+  const [activeTab, setActiveTab] = useState<NavTab>('dashboard'); // Default to Dashboard as requested in screenshot!
   const [scannerView, setScannerView] = useState<'landing' | 'results'>('landing');
   const [selectedRole, setSelectedRole] = useState('java_backend');
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
@@ -438,108 +439,16 @@ export default function App() {
             </>
           )}
 
-          {/* ─── TAB: DASHBOARD ─── */}
+          {/* ─── TAB: DASHBOARD (Exact Match to Reference Image) ─── */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-8">
-              {/* Welcome Banner */}
-              <div className="p-8 rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                <div>
-                  <span className="text-xs uppercase font-bold tracking-widest text-indigo-200">
-                    Candidate Profile
-                  </span>
-                  <h1 className="text-2xl sm:text-3xl font-black mt-1">
-                    Welcome back, Ruthik!
-                  </h1>
-                  <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-xl">
-                    Your resume is tuned for Java Full-Stack roles. Track your ATS score, optimize bullets, and complete learning roadmap levels.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('analyze')}
-                  className="px-5 py-2.5 rounded-2xl bg-white text-indigo-600 font-extrabold text-xs shadow-sm hover:bg-indigo-50 transition-all shrink-0 flex items-center gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>Scan Resume</span>
-                </button>
-              </div>
-
-              {/* Quick Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-500">Current ATS Score</span>
-                  <div className="text-2xl font-black text-indigo-600">
-                    {aiReport?.atsScore ?? localAnalysis.overallScore}%
-                  </div>
-                  <span className="text-[11px] text-emerald-600 font-bold">● High Placement Fit</span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-500">Keywords Matched</span>
-                  <div className="text-2xl font-black text-slate-900">
-                    {localAnalysis.matchedKeywords.length}
-                  </div>
-                  <span className="text-[11px] text-slate-400">Skills detected in resume</span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-500">Action Verbs Found</span>
-                  <div className="text-2xl font-black text-purple-600">
-                    {localAnalysis.actionVerbScore}%
-                  </div>
-                  <span className="text-[11px] text-purple-600 font-medium">Strong verb density</span>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
-                  <span className="text-xs font-semibold text-slate-500">Roadmap Progress</span>
-                  <div className="text-2xl font-black text-emerald-600">
-                    100%
-                  </div>
-                  <span className="text-[11px] text-emerald-600 font-medium">5/5 Levels Completed</span>
-                </div>
-              </div>
-
-              {/* Quick Launch Shortcuts */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div 
-                  onClick={() => setActiveTab('analyze')}
-                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
-                >
-                  <div className="h-10 w-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Analyze Resume (ATS Scanner)</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    Upload a PDF or paste text to test ATS compatibility against 7 target role presets.
-                  </p>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('create')}
-                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
-                >
-                  <div className="h-10 w-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 group-hover:scale-110 transition-transform">
-                    <Edit3 className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Visual Live Resume Editor</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    WYSIWYG A4 paper canvas with color themes and 1-click browser print / PDF export.
-                  </p>
-                </div>
-
-                <div 
-                  onClick={() => setActiveTab('roadmaps')}
-                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
-                >
-                  <div className="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 group-hover:scale-110 transition-transform">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <h3 className="font-extrabold text-slate-900 text-sm">Java Placement Roadmap Tree</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    5-level structured curriculum covering Java setup, OOP, Collections, Spring Boot, and Docker.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <DashboardView
+              onAnalyzeNew={() => {
+                setScannerView('landing');
+                setActiveTab('analyze');
+              }}
+              currentScore={aiReport?.atsScore ?? localAnalysis.overallScore}
+              userName={currentUser?.name || profile.name}
+            />
           )}
 
           {/* ─── TAB: CREATE RESUME (Visual Editor) ─── */}

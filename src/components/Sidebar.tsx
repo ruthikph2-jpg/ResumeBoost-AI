@@ -43,22 +43,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, user,
   return (
     <aside className="w-64 bg-white border-r border-slate-200/80 min-h-screen flex flex-col justify-between shrink-0 select-none">
       <div>
-        {/* Brand Header */}
+        {/* Brand Header (Exact Match to Reference Image) */}
         <div className="p-6 flex items-center justify-between border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 font-extrabold text-sm tracking-wider">
-              RB
+            <div className="relative">
+              <div className="h-10 w-10 rounded-2xl bg-gradient-to-tr from-purple-700 via-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 font-black text-sm tracking-wide">
+                RP
+              </div>
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400 absolute -top-1 -right-1 drop-shadow-sm" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-slate-900 text-base tracking-tight leading-tight">
-                  Analyze Resume
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col leading-tight">
+                <span className="font-black text-indigo-900 text-sm tracking-tight">
+                  Analyze
                 </span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
-                  v1
+                <span className="font-black text-indigo-900 text-sm tracking-tight -mt-0.5">
+                  Resume
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium">AI Career Booster</p>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-[#EEF2FF] text-[#4F46E5] border border-indigo-100 uppercase tracking-wider">
+                v1
+              </span>
             </div>
           </div>
         </div>
