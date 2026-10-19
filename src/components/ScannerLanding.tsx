@@ -111,7 +111,6 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
   };
 
   const processFile = async (file: File) => {
-    const allowed = ['application/pdf', 'text/plain'];
     const isPdf = file.name.endsWith('.pdf') || file.type === 'application/pdf';
     const isTxt = file.name.endsWith('.txt') || file.type === 'text/plain';
 
@@ -181,37 +180,37 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-4">
+    <div className="max-w-4xl mx-auto space-y-8 py-2">
       {/* Hero Header */}
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary-500/10 text-primary-400 border border-primary-500/20">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Next-Generation AI ATS Resume Optimizer</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
           Supercharge Your Resume <br className="hidden sm:inline" />
-          <span className="bg-gradient-to-r from-primary-400 via-indigo-300 to-sky-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             For Any Job Target With AI
           </span>
         </h1>
-        <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
+        <p className="text-sm sm:text-base text-slate-500 max-w-2xl mx-auto leading-relaxed">
           Upload your resume, select your target role, and get instant ATS compatibility scoring, keyword gap diagnostics, and AI-powered bullet point enhancements.
         </p>
       </div>
 
       {/* Main Scanner Box */}
-      <div className="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-9 border border-slate-200/90 shadow-sm space-y-6">
         
         {/* Step 1: Target Role Selector */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <Target className="w-4 h-4 text-primary-400" />
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <Target className="w-4 h-4 text-indigo-600" />
               <span>Step 1: Select Target Role</span>
             </label>
             <button
               onClick={() => setCustomJobMode(!customJobMode)}
-              className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1 transition-colors"
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1 transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               <span>{customJobMode ? 'Use Role Presets' : 'Custom Job Description'}</span>
@@ -222,11 +221,11 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
             <select
               value={selectedRole}
               onChange={(e) => handleRoleSelect(e.target.value)}
-              className="w-full bg-dark-900 border border-slate-700/80 rounded-xl px-4 py-3 text-sm font-medium text-slate-100 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all appearance-none cursor-pointer"
+              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all appearance-none cursor-pointer"
             >
               <option value="" disabled>-- Choose a target role to match against --</option>
               {Object.entries(ROLE_TEMPLATES).map(([key, data]) => (
-                <option key={key} value={key} className="bg-dark-900 text-slate-200">
+                <option key={key} value={key} className="text-slate-800 font-medium">
                   {data.title}
                 </option>
               ))}
@@ -238,19 +237,19 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
             </div>
           </div>
 
-          {/* Collapsible Job Description View */}
+          {/* Job Description View */}
           {(customJobMode || jobText) && (
             <div className="pt-2">
-              <div className="text-[11px] font-medium text-slate-400 mb-1 flex items-center justify-between">
+              <div className="text-[11px] font-semibold text-slate-500 mb-1 flex items-center justify-between">
                 <span>Job Description requirements used for ATS matching:</span>
-                <span className="text-[10px] text-slate-500">{jobText.split(/\s+/).filter(Boolean).length} words</span>
+                <span className="text-[11px] text-slate-400 font-mono">{jobText.split(/\s+/).filter(Boolean).length} words</span>
               </div>
               <textarea
                 rows={3}
                 value={jobText}
                 onChange={(e) => setJobText(e.target.value)}
-                placeholder="Paste the target job description or paste requirements here..."
-                className="w-full bg-dark-950/80 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:border-primary-500/60 leading-relaxed resize-y"
+                placeholder="Paste the target job description or requirements here..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-mono text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 leading-relaxed resize-y"
               />
             </div>
           )}
@@ -259,13 +258,13 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
         {/* Step 2: Resume File Upload Zone */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <FileUp className="w-4 h-4 text-emerald-400" />
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <FileUp className="w-4 h-4 text-emerald-600" />
               <span>Step 2: Upload Your Resume (PDF / TXT)</span>
             </label>
             <button
               onClick={() => setShowDirectPaste(!showDirectPaste)}
-              className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-800 font-medium flex items-center gap-1 transition-colors"
             >
               <FileText className="w-3 h-3" />
               <span>{showDirectPaste ? 'Hide Text Area' : 'Or Paste Raw Text'}</span>
@@ -293,22 +292,22 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
             onClick={() => {
               if (!uploadedFile) fileInputRef.current?.click();
             }}
-            className={`relative rounded-2xl border-2 border-dashed transition-all p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer ${
+            className={`relative rounded-3xl border-2 border-dashed transition-all p-8 flex flex-col items-center justify-center text-center cursor-pointer ${
               isDragging
-                ? 'border-primary-400 bg-primary-500/10 scale-[1.01]'
+                ? 'border-indigo-500 bg-indigo-50/60 scale-[1.01]'
                 : uploadedFile
-                ? 'border-emerald-500/60 bg-emerald-950/20'
-                : 'border-slate-700/80 hover:border-primary-500/70 bg-dark-900/50 hover:bg-dark-900/80'
+                ? 'border-emerald-400 bg-emerald-50/40'
+                : 'border-slate-200 hover:border-indigo-400 bg-slate-50/50 hover:bg-slate-50'
             }`}
           >
             {uploadedFile ? (
               <div className="flex flex-col items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center border border-emerald-200">
                   <FileCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="font-bold text-sm text-slate-100">{uploadedFile.name}</div>
-                  <div className="text-xs text-emerald-400 mt-0.5">
+                  <div className="font-bold text-sm text-slate-900">{uploadedFile.name}</div>
+                  <div className="text-xs text-emerald-600 font-semibold mt-0.5">
                     Ready for ATS scan • {uploadedFile.size}
                   </div>
                 </div>
@@ -319,7 +318,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                       e.stopPropagation();
                       fileInputRef.current?.click();
                     }}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold bg-dark-800 hover:bg-dark-700 text-slate-200 border border-slate-700 transition-colors"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm transition-colors"
                   >
                     Change File
                   </button>
@@ -329,24 +328,24 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                       e.stopPropagation();
                       handleRemoveFile();
                     }}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition-colors flex items-center gap-1"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors flex items-center gap-1"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                     <span>Remove</span>
                   </button>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-primary-500/10 text-primary-400 flex items-center justify-center border border-primary-500/20">
+                <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
                   <Upload className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-sm font-semibold text-slate-200">
+                  <div className="text-sm font-bold text-slate-800">
                     Drag and drop your resume file here
                   </div>
-                  <div className="text-xs text-slate-400">
-                    Supports <span className="text-slate-300 font-medium">PDF</span> and <span className="text-slate-300 font-medium">TXT</span> documents up to 10MB
+                  <div className="text-xs text-slate-500">
+                    Supports <span className="text-slate-800 font-semibold">PDF</span> and <span className="text-slate-800 font-semibold">TXT</span> files up to 10MB
                   </div>
                 </div>
                 <button
@@ -355,7 +354,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                     e.stopPropagation();
                     fileInputRef.current?.click();
                   }}
-                  className="mt-1 px-4 py-1.5 rounded-lg text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-md transition-all"
+                  className="mt-1 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
                 >
                   Browse Files
                 </button>
@@ -366,9 +365,9 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
           {/* Direct Paste Collapsible */}
           {showDirectPaste && (
             <div className="pt-2">
-              <div className="text-[11px] font-medium text-slate-400 mb-1 flex items-center justify-between">
+              <div className="text-[11px] font-semibold text-slate-500 mb-1 flex items-center justify-between">
                 <span>Extracted or Pasted Resume Text:</span>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-[10px] text-slate-400 font-mono">
                   {resumeText.split(/\s+/).filter(Boolean).length} words
                 </span>
               </div>
@@ -377,19 +376,19 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                 value={resumeText}
                 onChange={(e) => setResumeText(e.target.value)}
                 placeholder="Paste your raw resume text here..."
-                className="w-full bg-dark-950/80 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-300 placeholder-slate-600 focus:outline-none focus:border-primary-500/60 leading-relaxed resize-y"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-mono text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 leading-relaxed resize-y"
               />
             </div>
           )}
         </div>
 
         {/* 1-Click Sample Test Action */}
-        <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400 gap-2">
+        <div className="flex flex-wrap items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 gap-2">
           <span>Don't have a resume PDF ready?</span>
           <button
             type="button"
             onClick={handleLoadSample}
-            className="flex items-center gap-1.5 text-primary-400 hover:text-primary-300 font-semibold transition-colors"
+            className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 font-bold transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Load Ruthik's Sample Java Resume (1-Click Test)</span>
@@ -400,15 +399,15 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
         {analyzing && (
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-primary-300 flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-primary-400 animate-ping" />
+              <span className="font-bold text-indigo-600 flex items-center gap-2">
+                <span className="inline-block w-2 h-2 rounded-full bg-indigo-600 animate-ping" />
                 {scanStage}
               </span>
-              <span className="font-mono text-slate-400 font-bold">{scanProgress}%</span>
+              <span className="font-mono text-slate-700 font-bold">{scanProgress}%</span>
             </div>
-            <div className="h-2.5 w-full bg-dark-900 rounded-full overflow-hidden border border-slate-700/80">
+            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200">
               <div
-                className="h-full bg-gradient-to-r from-primary-600 via-indigo-500 to-emerald-400 transition-all duration-300 rounded-full"
+                className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 transition-all duration-300 rounded-full"
                 style={{ width: `${scanProgress}%` }}
               />
             </div>
@@ -421,11 +420,11 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
             type="button"
             onClick={onStartScan}
             disabled={analyzing || !resumeText.trim()}
-            className="w-full py-3.5 px-6 rounded-xl text-sm font-bold bg-gradient-to-r from-primary-600 via-indigo-600 to-primary-600 hover:from-primary-500 hover:to-indigo-500 text-white shadow-xl shadow-primary-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
+            className="w-full py-4 px-6 rounded-2xl text-sm font-extrabold bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group"
           >
             {analyzing ? (
               <>
-                <Zap className="w-4 h-4 animate-spin text-amber-300" />
+                <Zap className="w-4 h-4 animate-spin text-amber-200" />
                 <span>Running Deep AI ATS Scan...</span>
               </>
             ) : (
@@ -437,7 +436,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
             )}
           </button>
           {!resumeText.trim() && (
-            <p className="text-[11px] text-center text-slate-500 mt-2">
+            <p className="text-[11px] text-center text-slate-400 mt-2">
               Please upload a resume PDF or select the 1-click sample to begin analysis.
             </p>
           )}
@@ -446,33 +445,33 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
       </div>
 
       {/* Feature Highlights Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-        <div className="p-4 rounded-xl bg-dark-800/40 border border-slate-800 space-y-1.5">
-          <div className="flex items-center gap-2 text-primary-400 font-bold text-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1.5">
+          <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs">
             <ShieldCheck className="w-4 h-4" />
             <span>ATS Compatibility Index</span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Evaluates keyword frequencies, action verbs, quantified metrics, and structural formatting.
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-dark-800/40 border border-slate-800 space-y-1.5">
-          <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1.5">
+          <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs">
             <Zap className="w-4 h-4" />
             <span>Google XYZ Bullet Optimizer</span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Rewrites weak bullet points using Google's formula: "Accomplished [X] as measured by [Y] by doing [Z]".
           </p>
         </div>
 
-        <div className="p-4 rounded-xl bg-dark-800/40 border border-slate-800 space-y-1.5">
-          <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-1.5">
+          <div className="flex items-center gap-2 text-purple-600 font-bold text-xs">
             <Briefcase className="w-4 h-4" />
             <span>Target Role Roadmaps</span>
           </div>
-          <p className="text-xs text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Structured career milestones and interview topics tailored for Java, Full-Stack, and Cloud placements.
           </p>
         </div>

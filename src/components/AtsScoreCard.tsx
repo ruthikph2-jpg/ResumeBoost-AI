@@ -10,9 +10,9 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
   const { overallScore, matchScore, impactScore, actionVerbScore, brevityScore } = analysis;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return { text: 'text-emerald-400', stroke: '#10B981', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' };
-    if (score >= 60) return { text: 'text-amber-400', stroke: '#F59E0B', bg: 'bg-amber-500/10', border: 'border-amber-500/30' };
-    return { text: 'text-rose-400', stroke: '#F43F5E', bg: 'bg-rose-500/10', border: 'border-rose-500/30' };
+    if (score >= 80) return { text: 'text-emerald-600', stroke: '#10B981', bg: 'bg-emerald-50', border: 'border-emerald-200' };
+    if (score >= 60) return { text: 'text-amber-600', stroke: '#F59E0B', bg: 'bg-amber-50', border: 'border-amber-200' };
+    return { text: 'text-rose-600', stroke: '#F43F5E', bg: 'bg-rose-50', border: 'border-rose-200' };
   };
 
   const scoreTheme = getScoreColor(overallScore);
@@ -23,7 +23,7 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
   const strokeDashoffset = circumference - (overallScore / 100) * circumference;
 
   return (
-    <div className="glass-card rounded-2xl p-6 glow-effect border border-slate-800">
+    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         
         {/* Radial Meter */}
@@ -35,7 +35,7 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
                 cx="54"
                 cy="54"
                 r={radius}
-                className="stroke-slate-800"
+                className="stroke-slate-100"
                 strokeWidth="10"
                 fill="transparent"
               />
@@ -54,7 +54,7 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-3xl font-extrabold tracking-tight ${scoreTheme.text}`}>
+              <span className={`text-3xl font-black tracking-tight ${scoreTheme.text}`}>
                 {overallScore}
               </span>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
@@ -66,11 +66,11 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Award className={`w-5 h-5 ${scoreTheme.text}`} />
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-extrabold text-slate-900">
                 {overallScore >= 80 ? 'ATS Optimized' : overallScore >= 60 ? 'Competitive' : 'Needs Optimization'}
               </h3>
             </div>
-            <p className="text-xs text-slate-300 max-w-sm leading-relaxed">
+            <p className="text-xs text-slate-600 max-w-sm leading-relaxed">
               {overallScore >= 80
                 ? 'Your resume demonstrates strong technical depth, high action verb density, and measurable impact metrics.'
                 : overallScore >= 60
@@ -83,46 +83,46 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ analysis }) => {
         {/* Breakdown Badges */}
         <div className="grid grid-cols-2 gap-3 w-full md:w-auto">
           {/* Match Score */}
-          <div className="p-3 rounded-xl bg-dark-900/80 border border-slate-800">
-            <div className="flex items-center justify-between gap-3 text-xs mb-1">
-              <span className="text-slate-400 font-medium">Keyword Match</span>
-              <span className="font-bold text-white">{matchScore}%</span>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div className="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span className="text-slate-600 font-semibold">Keyword Match</span>
+              <span className="font-bold text-slate-900">{matchScore}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-primary-500 h-full rounded-full transition-all duration-500" style={{ width: `${matchScore}%` }} />
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${matchScore}%` }} />
             </div>
           </div>
 
           {/* Impact Score */}
-          <div className="p-3 rounded-xl bg-dark-900/80 border border-slate-800">
-            <div className="flex items-center justify-between gap-3 text-xs mb-1">
-              <span className="text-slate-400 font-medium">Impact & Metrics</span>
-              <span className="font-bold text-emerald-400">{impactScore}%</span>
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div className="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span className="text-slate-600 font-semibold">Impact & Metrics</span>
+              <span className="font-bold text-emerald-600">{impactScore}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
               <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${impactScore}%` }} />
             </div>
           </div>
 
-          {/* Action Verb Score */}
-          <div className="p-3 rounded-xl bg-dark-900/80 border border-slate-800">
-            <div className="flex items-center justify-between gap-3 text-xs mb-1">
-              <span className="text-slate-400 font-medium">Action Verbs</span>
-              <span className="font-bold text-amber-400">{actionVerbScore}%</span>
+          {/* Brevity Score */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div className="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span className="text-slate-600 font-semibold">Length & Brevity</span>
+              <span className="font-bold text-slate-900">{brevityScore}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-amber-500 h-full rounded-full transition-all duration-500" style={{ width: `${actionVerbScore}%` }} />
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-purple-600 h-full rounded-full transition-all duration-500" style={{ width: `${brevityScore}%` }} />
             </div>
           </div>
 
-          {/* Brevity Score */}
-          <div className="p-3 rounded-xl bg-dark-900/80 border border-slate-800">
-            <div className="flex items-center justify-between gap-3 text-xs mb-1">
-              <span className="text-slate-400 font-medium">Structure & Length</span>
-              <span className="font-bold text-cyan-400">{brevityScore}%</span>
+          {/* Action Verbs */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+            <div className="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span className="text-slate-600 font-semibold">Action Verbs</span>
+              <span className="font-bold text-indigo-600">{actionVerbScore}%</span>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-cyan-500 h-full rounded-full transition-all duration-500" style={{ width: `${brevityScore}%` }} />
+            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-indigo-600 h-full rounded-full transition-all duration-500" style={{ width: `${actionVerbScore}%` }} />
             </div>
           </div>
         </div>

@@ -1,163 +1,219 @@
 import React, { useState } from 'react';
-import { Compass, CheckCircle2, Award, ExternalLink, Code2, Layers, BookOpen } from 'lucide-react';
-import { RoadmapMilestone } from '../types';
+import { 
+  BookOpen, 
+  Lock, 
+  CheckCircle2, 
+  Circle, 
+  Compass, 
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 
-const JAVA_ROADMAP: RoadmapMilestone[] = [
+interface Milestone {
+  level: number;
+  title: string;
+  description: string;
+  tags: string[];
+}
+
+const JAVA_MILESTONES: Milestone[] = [
   {
     level: 1,
-    title: 'Core Java & OOP Fundamentals',
-    description: 'Master core Java 17/21 language features, memory model, and collections.',
-    topics: ['OOP Principles (Encapsulation, Polymorphism, Abstraction)', 'Java Collections Framework (HashMap, ArrayList, PriorityQueue)', 'Generics & Exception Handling', 'Java 8+ Streams, Lambdas & Optional'],
-    projectIdea: 'Console-based Banking & Account Management System with multi-threaded transaction simulation.'
+    title: 'Java Basics & Setup',
+    description: 'Understand the JDK, JRE, and JVM architecture. Master core language syntax, primitive types, loops, and conditional statements.',
+    tags: ['JDK vs JRE vs JVM', 'Data Types & Variables', 'Control Flow Statements', 'Arrays & String Handling']
   },
   {
     level: 2,
-    title: 'Data Structures & Algorithms (DSA)',
-    description: 'Build algorithmic problem-solving speed for technical interview rounds.',
-    topics: ['Arrays, Two Pointers & Sliding Window', 'Linked Lists, Stacks & Queues', 'Binary Trees, BST & Graph Traversal (BFS/DFS)', 'Dynamic Programming & Greedy Algorithms'],
-    projectIdea: 'Interactive Algorithm Visualizer web app or CLI benchmark tool comparing sorting & graph speeds.'
+    title: 'Object-Oriented Programming (OOP)',
+    description: 'Master the building blocks of Java. Implement core OOP pillars: Inheritance, Polymorphism, Encapsulation, and Abstraction.',
+    tags: ['Classes & Objects', 'Inheritance & Interfaces', 'Polymorphism (Overriding/Overloading)', 'Abstract Classes']
   },
   {
     level: 3,
-    title: 'Spring Boot & RESTful Microservices',
-    description: 'Develop enterprise-grade backend APIs with modern Spring ecosystem.',
-    topics: ['Spring Boot Starter Web & Dependency Injection', 'Spring Data JPA & Hibernate ORM', 'Spring Security with JWT authentication', 'REST API Design & Validation (Jakarta Validation)'],
-    projectIdea: 'E-Commerce / Inventory Microservice with JWT Auth, PostgreSQL database, and OpenAPI/Swagger documentation.'
+    title: 'Collections & Exceptions',
+    description: 'Learn to handle lists, sets, and maps efficiently. Implement safe code execution blocks using Java Exception mechanisms.',
+    tags: ['List, Set, Map interfaces', 'ArrayList & HashMap internals', 'Try-Catch Blocks', 'Custom Exceptions']
   },
   {
     level: 4,
-    title: 'Databases, Caching & Message Queues',
-    description: 'Scale systems beyond single-node architecture with databases and async streaming.',
-    topics: ['Relational Database Indexing & Query Tuning (PostgreSQL/MySQL)', 'In-memory Caching with Redis', 'Event-Driven Architecture with Apache Kafka or RabbitMQ', 'Connection Pooling (HikariCP)'],
-    projectIdea: 'Real-time Live Notification & Telemetry Service with Redis Pub/Sub and WebSocket connections.'
+    title: 'Spring Boot & RESTful Microservices',
+    description: 'Develop enterprise-grade backend APIs with modern Spring Boot, Hibernate/JPA, and PostgreSQL.',
+    tags: ['Spring Boot Core', 'RESTful APIs', 'Spring Data JPA & Hibernate', 'Spring Security & JWT']
   },
   {
     level: 5,
-    title: 'DevOps, Docker & Cloud Deployment',
-    description: 'Package, containerize, and deploy production Java applications to the cloud.',
-    topics: ['Docker Multi-stage Builds for Spring Boot JARs', 'Docker Compose Local Orchestration', 'CI/CD Pipelines with GitHub Actions', 'Deploying to Render, AWS EC2, or Railway'],
-    projectIdea: 'Full-stack Containerized Application deployed on cloud with automated CI/CD unit testing.'
-  }
-];
-
-const FULLSTACK_ROADMAP: RoadmapMilestone[] = [
-  {
-    level: 1,
-    title: 'Modern Frontend Foundations',
-    description: 'Master modern TypeScript, React, and modular state management.',
-    topics: ['React 18 Hooks (useEffect, useMemo, useCallback)', 'TypeScript Generics & Strict Typing', 'Tailwind CSS & Responsive Layouts', 'Client-side Routing (React Router)'],
-    projectIdea: 'Interactive Developer Portfolio with dynamic theme switcher and project showcase.'
-  },
-  {
-    level: 2,
-    title: 'Backend Integration & State Management',
-    description: 'Connect frontend interfaces to high-performance backend REST & GraphQL endpoints.',
-    topics: ['Zustand or Redux Toolkit for Global State', 'Axios HTTP Interceptors & Token Handling', 'React Query / SWR for Data Fetching & Caching', 'Form Handling & Zod Schema Validation'],
-    projectIdea: 'Collaborative Kanban Task Board with drag-and-drop cards and persistent backend sync.'
-  },
-  {
-    level: 3,
-    title: 'Full-Stack Security & Authentication',
-    description: 'Implement secure sessions, OAuth2 providers, and access control.',
-    topics: ['JWT Access & Refresh Token Rotation', 'OAuth2 Social Login (Google & GitHub)', 'CORS Policy & Cookie Security (HttpOnly)', 'Role-based Access Control (RBAC)'],
-    projectIdea: 'SaaS Dashboard with user auth, billing tier toggles, and protected administrative routes.'
+    title: 'Testing, Docker & Placement Prep',
+    description: 'Containerize applications with Docker, write unit tests with JUnit/Mockito, and master SDE DSA interview questions.',
+    tags: ['JUnit & Mockito', 'Docker & Containerization', 'System Design Basics', 'DSA & LeetCode Patterns']
   }
 ];
 
 export const RoadmapView: React.FC = () => {
-  const [activeTrack, setActiveTrack] = useState<'java' | 'fullstack'>('java');
-  const milestones = activeTrack === 'java' ? JAVA_ROADMAP : FULLSTACK_ROADMAP;
+  const [completedLevels, setCompletedLevels] = useState<number[]>([1, 2, 3, 4, 5]); // default 100% like image 2
+  const [selectedPath, setSelectedPath] = useState<'java' | 'react' | 'data'>('java');
+
+  const toggleLevel = (lvl: number) => {
+    setCompletedLevels((prev) => 
+      prev.includes(lvl) ? prev.filter(l => l !== lvl) : [...prev, lvl]
+    );
+  };
+
+  const progressPercent = Math.round((completedLevels.length / JAVA_MILESTONES.length) * 100);
 
   return (
     <div className="space-y-6">
-      {/* Header and Track Toggle */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-dark-800 border border-slate-800">
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <Compass className="w-5 h-5 text-primary-400" />
-            CAREER PLACEMENT ROADMAPS
-          </h2>
-          <p className="text-xs text-slate-400">
-            Bridge your resume skill gaps with structured learning pathways and portfolio projects
-          </p>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column: AVAILABLE PATHS (4 cols) */}
+        <div className="lg:col-span-4 space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">
+            AVAILABLE PATHS
+          </h3>
 
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-dark-900 border border-slate-700/60">
-          <button
-            onClick={() => setActiveTrack('java')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              activeTrack === 'java'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Java / Spring Boot Track
-          </button>
-          <button
-            onClick={() => setActiveTrack('fullstack')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-              activeTrack === 'fullstack'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Full Stack React Track
-          </button>
-        </div>
-      </div>
-
-      {/* Pathway Milestones */}
-      <div className="relative border-l-2 border-primary-500/30 ml-4 sm:ml-8 space-y-8 pb-4">
-        {milestones.map((milestone) => (
-          <div key={milestone.level} className="relative pl-6 sm:pl-8">
-            {/* Milestone Badge Icon */}
-            <div className="absolute -left-[17px] top-1.5 w-8 h-8 rounded-full bg-dark-900 border-2 border-primary-500 flex items-center justify-center text-xs font-bold text-primary-300 shadow-lg shadow-primary-500/20">
-              {milestone.level}
+          <div className="space-y-3">
+            {/* Java Developer Path (Active) */}
+            <div
+              onClick={() => setSelectedPath('java')}
+              className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${
+                selectedPath === 'java'
+                  ? 'border-indigo-500 bg-white shadow-md shadow-indigo-500/5'
+                  : 'border-slate-200 bg-white hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center gap-3.5">
+                <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900">Java Developer</h4>
+                  <p className="text-xs text-indigo-600 font-medium">5 Levels • Active</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
             </div>
 
-            {/* Content Card */}
-            <div className="glass-card rounded-2xl p-5 glow-effect border border-slate-800 hover:border-slate-700 transition-all space-y-4">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-primary-500/10 text-primary-400 border border-primary-500/20">
-                    STAGE {milestone.level}
-                  </span>
-                  <h3 className="font-bold text-base text-white">{milestone.title}</h3>
+            {/* Full-Stack React Dev (Coming Soon) */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 opacity-70 flex items-center justify-between cursor-not-allowed">
+              <div className="flex items-center gap-3.5">
+                <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">{milestone.description}</p>
-              </div>
-
-              {/* Core Topics Checklist */}
-              <div>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                  Key Skills to Master:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {milestone.topics.map((t, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs text-slate-300 font-mono bg-dark-900/80 px-2.5 py-1.5 rounded-lg border border-slate-800/80">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      <span>{t}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recommended Portfolio Project */}
-              <div className="p-3.5 rounded-xl bg-primary-950/20 border border-primary-500/25 flex items-start gap-3">
-                <Code2 className="w-4 h-4 text-primary-400 mt-0.5 shrink-0" />
                 <div>
-                  <span className="text-[11px] font-bold text-primary-300 uppercase tracking-wider block">
-                    Recommended Resume Project:
-                  </span>
-                  <p className="text-xs text-slate-200 mt-0.5 leading-relaxed font-mono">
-                    {milestone.projectIdea}
-                  </p>
+                  <h4 className="font-bold text-sm text-slate-700">Full-Stack React Dev</h4>
+                  <p className="text-xs text-slate-400 font-medium">6 Levels • Coming Soon</p>
                 </div>
               </div>
+            </div>
 
+            {/* Data Scientist (Coming Soon) */}
+            <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 opacity-70 flex items-center justify-between cursor-not-allowed">
+              <div className="flex items-center gap-3.5">
+                <div className="h-10 w-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-slate-700">Data Scientist</h4>
+                  <p className="text-xs text-slate-400 font-medium">8 Levels • Coming Soon</p>
+                </div>
+              </div>
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Right Column: Java Developer Roadmap Tree (8 cols) */}
+        <div className="lg:col-span-8 bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-8">
+          
+          {/* Header & Progress Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2 text-indigo-600 font-bold text-base">
+                <Compass className="w-5 h-5" />
+                <h2 className="text-lg font-bold text-slate-900">Java Developer Roadmap Tree</h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Click a level milestone to mark it completed. Watch your progress grow!
+              </p>
+            </div>
+
+            <div className="sm:text-right shrink-0">
+              <div className="text-xs font-bold text-slate-700 mb-1 flex items-center sm:justify-end gap-2">
+                <span>Completion Progress</span>
+                <span className="font-mono text-indigo-600 font-extrabold">{progressPercent}%</span>
+              </div>
+              <div className="w-44 h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                <div 
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500" 
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Level Cards List */}
+          <div className="space-y-6">
+            {JAVA_MILESTONES.map((item) => {
+              const isDone = completedLevels.includes(item.level);
+              return (
+                <div key={item.level} className="flex items-start gap-4 sm:gap-6 group">
+                  
+                  {/* Left Circular Level Badge */}
+                  <div className="shrink-0 flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white font-extrabold text-xs flex flex-col items-center justify-center shadow-md shadow-indigo-600/20 group-hover:scale-105 transition-transform">
+                      <span className="text-[10px] uppercase tracking-wider opacity-80">Lvl</span>
+                      <span className="leading-none text-sm font-black">{item.level}</span>
+                    </div>
+                  </div>
+
+                  {/* Milestone Card */}
+                  <div 
+                    onClick={() => toggleLevel(item.level)}
+                    className={`flex-1 p-5 rounded-2xl border transition-all cursor-pointer ${
+                      isDone
+                        ? 'border-indigo-200 bg-indigo-50/20 hover:border-indigo-300'
+                        : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h4 className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+
+                      {/* Checkbox Icon */}
+                      <div className="shrink-0 pt-0.5">
+                        {isDone ? (
+                          <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+                        ) : (
+                          <Circle className="w-5 h-5 text-slate-300 hover:text-indigo-400 transition-colors" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="mt-3.5 flex flex-wrap gap-1.5">
+                      {item.tags.map((tag, i) => (
+                        <span 
+                          key={i}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200/60"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

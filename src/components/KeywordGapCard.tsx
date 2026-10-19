@@ -13,14 +13,14 @@ export const KeywordGapCard: React.FC<KeywordGapCardProps> = ({
   onAddKeyword,
 }) => {
   return (
-    <div className="glass-card rounded-2xl p-5 glow-effect border border-slate-800">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-5">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-sm text-slate-100 tracking-wide flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary-400" />
-            ATS KEYWORD GAP ANALYSIS
+          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            ATS Keyword Gap Analysis
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 mt-0.5">
             Automated screening algorithms rank resumes based on keyword presence
           </p>
         </div>
@@ -28,10 +28,10 @@ export const KeywordGapCard: React.FC<KeywordGapCardProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Matched Keywords */}
-        <div className="p-4 rounded-xl bg-dark-900/90 border border-slate-800">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+        <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               MATCHED KEYWORDS ({matchedKeywords.length})
             </span>
           </div>
@@ -39,13 +39,13 @@ export const KeywordGapCard: React.FC<KeywordGapCardProps> = ({
           {matchedKeywords.length === 0 ? (
             <p className="text-xs text-slate-500 italic py-2">No direct keyword matches found yet.</p>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {matchedKeywords.map((kw) => (
                 <span
                   key={kw}
-                  className="px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/25 flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-white text-emerald-700 border border-emerald-200 flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {kw}
                 </span>
               ))}
@@ -54,30 +54,29 @@ export const KeywordGapCard: React.FC<KeywordGapCardProps> = ({
         </div>
 
         {/* Missing Keywords */}
-        <div className="p-4 rounded-xl bg-dark-900/90 border border-slate-800">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5" />
-              MISSING IN RESUME ({missingKeywords.length})
+        <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-700 flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-amber-600" />
+              MISSING SKILLS ({missingKeywords.length})
             </span>
-            <span className="text-[10px] text-slate-500">Click (+) to add to resume</span>
           </div>
 
           {missingKeywords.length === 0 ? (
-            <p className="text-xs text-emerald-400/80 italic py-2">
-              🎉 Outstanding! All target job keywords are present in your resume.
+            <p className="text-xs text-emerald-600 font-medium italic py-2">
+              🎉 100% keyword match! No critical skills missing.
             </p>
           ) : (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 pt-1">
               {missingKeywords.map((kw) => (
                 <button
                   key={kw}
                   onClick={() => onAddKeyword(kw)}
-                  className="px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/25 flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 group"
-                  title={`Add "${kw}" to technical skills`}
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 hover:border-amber-300 flex items-center gap-1 transition-all group shadow-sm"
+                  title={`Add "${kw}" to your resume`}
                 >
+                  <Plus className="w-3 h-3 text-amber-600 group-hover:scale-125 transition-transform" />
                   <span>{kw}</span>
-                  <Plus className="w-3 h-3 text-amber-400 group-hover:rotate-90 transition-transform" />
                 </button>
               ))}
             </div>

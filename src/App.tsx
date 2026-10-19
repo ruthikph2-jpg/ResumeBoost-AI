@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
-import { Navbar } from './components/Navbar';
+import { Sidebar, NavTab } from './components/Sidebar';
 import { ScannerLanding, ROLE_TEMPLATES } from './components/ScannerLanding';
 import { AtsScoreCard } from './components/AtsScoreCard';
 import { KeywordGapCard } from './components/KeywordGapCard';
@@ -21,7 +21,12 @@ import {
   Edit3, 
   Compass, 
   RotateCcw,
-  FileText
+  FileText,
+  LayoutGrid,
+  ShieldCheck,
+  TrendingUp,
+  Zap,
+  BookOpen
 } from 'lucide-react';
 
 const DEFAULT_RESUME = `Ruthik ph
@@ -51,12 +56,12 @@ BugShield - AI Bug Detector & Auto-Fixer
 const DEFAULT_JOB = ROLE_TEMPLATES.java_backend.description;
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'analysis' | 'editor' | 'roadmap'>('analysis');
+  const [activeTab, setActiveTab] = useState<NavTab>('roadmaps'); // Default to roadmaps or analyze
   const [scannerView, setScannerView] = useState<'landing' | 'results'>('landing');
   const [selectedRole, setSelectedRole] = useState('java_backend');
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
   const [jobText, setJobText] = useState(DEFAULT_JOB);
-  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
+  const [apiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
@@ -161,243 +166,385 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex font-sans antialiased">
       <Toaster
         position="top-right"
         toastOptions={{
           style: {
-            background: '#111827',
-            color: '#F3F4F6',
-            border: '1px solid #374151',
+            background: '#FFFFFF',
+            color: '#1E293B',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
             fontSize: '12px',
           },
         }}
       />
 
-      <Navbar
-        apiKey={apiKey}
-        setApiKey={setApiKey}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      {/* Clean Left Sidebar Navigation (Matching Image 2) */}
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         
-        {/* ─── TAB 1: ATS SCANNER & ANALYZER ─── */}
-        {activeTab === 'analysis' && (
-          <>
-            {scannerView === 'landing' ? (
-              <ScannerLanding
-                selectedRole={selectedRole}
-                setSelectedRole={setSelectedRole}
-                jobText={jobText}
-                setJobText={setJobText}
-                resumeText={resumeText}
-                setResumeText={setResumeText}
-                onStartScan={handleStartScan}
-                analyzing={analyzing}
-                scanProgress={scanProgress}
-                scanStage={scanStage}
-              />
-            ) : (
-              <div className="space-y-6 animate-fade-in">
-                {/* Top Action Bar in Results Mode */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-dark-800/80 border border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setScannerView('landing')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
-                    >
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                      <span>Scan Another Resume</span>
-                    </button>
-                    <div className="text-xs text-slate-400">
-                      Target Role:{' '}
-                      <span className="font-semibold text-primary-300">
-                        {ROLE_TEMPLATES[selectedRole]?.title || 'Custom Role'}
-                      </span>
-                    </div>
-                  </div>
+        {/* Minimal Clean Header (No GitHub button, No Gemini key button) */}
+        <header className="h-16 px-6 sm:px-10 border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
+          <div>
+            <h2 className="font-extrabold text-sm sm:text-base text-slate-800 capitalize tracking-tight">
+              {activeTab === 'roadmaps' && 'Career Roadmaps & Learning Paths'}
+              {activeTab === 'analyze' && 'AI ATS Resume Scanner'}
+              {activeTab === 'dashboard' && 'Developer Overview Dashboard'}
+              {activeTab === 'create' && 'Live Visual Resume Builder'}
+              {activeTab === 'modify' && 'Bullet Point & Keyword Optimizer'}
+              {activeTab === 'history' && 'Resume Exports & History'}
+              {activeTab === 'settings' && 'App Settings & Preferences'}
+            </h2>
+          </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => setActiveTab('editor')}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-md shadow-primary-500/20 transition-all"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>Open Live Resume Editor</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('roadmap')}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
-                    >
-                      <Compass className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Career Roadmap</span>
-                    </button>
-                    <button
-                      onClick={() => setIsExportOpen(true)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Export</span>
-                    </button>
-                  </div>
-                </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsExportOpen(true)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
+            </button>
+          </div>
+        </header>
 
-                {/* ATS Score Overview Card */}
-                <AtsScoreCard
-                  analysis={{
-                    ...localAnalysis,
-                    overallScore: aiReport?.atsScore ?? localAnalysis.overallScore,
-                    matchScore: aiReport?.matchScore ?? localAnalysis.matchScore,
-                  }}
+        {/* Dynamic Page Content */}
+        <main className="flex-1 p-6 sm:p-10 max-w-7xl w-full mx-auto">
+          
+          {/* ─── TAB: ROADMAPS (Exact Layout from Image 2) ─── */}
+          {activeTab === 'roadmaps' && (
+            <RoadmapView />
+          )}
+
+          {/* ─── TAB: ANALYZE (ATS Scanner) ─── */}
+          {activeTab === 'analyze' && (
+            <>
+              {scannerView === 'landing' ? (
+                <ScannerLanding
+                  selectedRole={selectedRole}
+                  setSelectedRole={setSelectedRole}
+                  jobText={jobText}
+                  setJobText={setJobText}
+                  resumeText={resumeText}
+                  setResumeText={setResumeText}
+                  onStartScan={handleStartScan}
+                  analyzing={analyzing}
+                  scanProgress={scanProgress}
+                  scanStage={scanStage}
                 />
-
-                {/* AI Summary Banner if present */}
-                {aiReport?.summary && (
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-primary-950/30 to-dark-800 border border-primary-500/20">
-                    <div className="flex items-center gap-2 text-xs font-bold text-primary-300 mb-1">
-                      <Sparkles className="w-4 h-4 text-primary-400" />
-                      <span>AI EXECUTIVE SUMMARY & ATS EVALUATION</span>
-                    </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      {aiReport.summary}
-                    </p>
-                  </div>
-                )}
-
-                {/* AI Insights & Diagnostics */}
-                {aiReport && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* AI Strengths */}
-                    <div className="p-5 rounded-xl bg-dark-800/80 border border-emerald-500/20 space-y-3">
-                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>AI DETECTED STRENGTHS</span>
+              ) : (
+                <div className="space-y-6">
+                  {/* Top Action Bar in Results Mode */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl bg-white border border-slate-200/90 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setScannerView('landing')}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span>Scan Another Resume</span>
+                      </button>
+                      <div className="text-xs text-slate-500 font-medium">
+                        Target Role:{' '}
+                        <span className="font-bold text-indigo-600">
+                          {ROLE_TEMPLATES[selectedRole]?.title || 'Custom Role'}
+                        </span>
                       </div>
-                      <ul className="space-y-2 text-xs text-slate-300">
-                        {aiReport.strengths.map((str, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-emerald-400 font-bold mt-0.5">•</span>
-                            <span>{str}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
 
-                    {/* AI Improvements */}
-                    <div className="p-5 rounded-xl bg-dark-800/80 border border-amber-500/20 space-y-3">
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>CRITICAL ATS IMPROVEMENTS</span>
-                      </div>
-                      <ul className="space-y-2 text-xs text-slate-300">
-                        {aiReport.improvements.map((imp, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-amber-400 font-bold mt-0.5">•</span>
-                            <span>{imp}</span>
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={() => setActiveTab('create')}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Open Live Resume Editor</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('roadmaps')}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                      >
+                        <Compass className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Career Roadmap</span>
+                      </button>
                     </div>
                   </div>
-                )}
 
-                {/* 2-Column Core Insights: Keyword Gap + Bullet Optimizer */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-                  
-                  {/* Left: Keyword Gap Card */}
-                  <KeywordGapCard
-                    matchedKeywords={localAnalysis.matchedKeywords}
-                    missingKeywords={aiReport?.missingSkills && aiReport.missingSkills.length > 0 ? aiReport.missingSkills : localAnalysis.missingKeywords}
-                    onAddKeyword={handleAddKeyword}
+                  {/* ATS Score Overview Card */}
+                  <AtsScoreCard
+                    analysis={{
+                      ...localAnalysis,
+                      overallScore: aiReport?.atsScore ?? localAnalysis.overallScore,
+                      matchScore: aiReport?.matchScore ?? localAnalysis.matchScore,
+                    }}
                   />
 
-                  {/* Right: Google XYZ Bullet Point Optimizer */}
-                  <BulletPointOptimizer
-                    bullets={localAnalysis.bulletPoints}
-                    apiKey={apiKey}
-                    onReplaceBullet={handleReplaceBullet}
-                  />
-
-                </div>
-
-                {/* Collapsible Raw Resume Preview & Quick Edit */}
-                <div className="p-4 rounded-xl bg-dark-800/60 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                      <FileText className="w-4 h-4 text-primary-400" />
-                      <span>ACTIVE RESUME SOURCE TEXT ({localAnalysis.wordCount} words)</span>
+                  {/* AI Summary Banner if present */}
+                  {aiReport?.summary && (
+                    <div className="p-5 rounded-3xl bg-indigo-50/50 border border-indigo-100 space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-bold text-indigo-700">
+                        <Sparkles className="w-4 h-4 text-indigo-600" />
+                        <span>AI EXECUTIVE SUMMARY & ATS EVALUATION</span>
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                        {aiReport.summary}
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setShowRawResumeToggle(!showRawResumeToggle)}
-                      className="text-xs text-primary-400 hover:text-primary-300 font-medium transition-colors"
-                    >
-                      {showRawResumeToggle ? 'Collapse Text' : 'View / Edit Resume Text'}
-                    </button>
-                  </div>
+                  )}
 
-                  {showRawResumeToggle && (
-                    <div className="space-y-2 pt-2 border-t border-slate-800">
-                      <textarea
-                        rows={8}
-                        value={resumeText}
-                        onChange={(e) => setResumeText(e.target.value)}
-                        className="w-full bg-dark-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-primary-500 leading-relaxed resize-y"
-                      />
-                      <div className="flex justify-end">
-                        <button
-                          onClick={handleStartScan}
-                          disabled={analyzing}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white transition-all"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Re-Run Analysis With Edited Text</span>
-                        </button>
+                  {/* AI Insights & Diagnostics */}
+                  {aiReport && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* AI Strengths */}
+                      <div className="p-5 rounded-3xl bg-white border border-emerald-200/90 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-700">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>AI DETECTED STRENGTHS</span>
+                        </div>
+                        <ul className="space-y-2 text-xs text-slate-600">
+                          {aiReport.strengths.map((str, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-emerald-600 font-bold mt-0.5">•</span>
+                              <span>{str}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* AI Improvements */}
+                      <div className="p-5 rounded-3xl bg-white border border-amber-200/90 shadow-sm space-y-3">
+                        <div className="flex items-center gap-2 text-xs font-bold text-amber-700">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                          <span>CRITICAL ATS IMPROVEMENTS</span>
+                        </div>
+                        <ul className="space-y-2 text-xs text-slate-600">
+                          {aiReport.improvements.map((imp, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <span className="text-amber-600 font-bold mt-0.5">•</span>
+                              <span>{imp}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   )}
+
+                  {/* 2-Column: Keyword Gap + Bullet Optimizer */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <KeywordGapCard
+                      matchedKeywords={localAnalysis.matchedKeywords}
+                      missingKeywords={aiReport?.missingSkills && aiReport.missingSkills.length > 0 ? aiReport.missingSkills : localAnalysis.missingKeywords}
+                      onAddKeyword={handleAddKeyword}
+                    />
+
+                    <BulletPointOptimizer
+                      bullets={localAnalysis.bulletPoints}
+                      apiKey={apiKey}
+                      onReplaceBullet={handleReplaceBullet}
+                    />
+                  </div>
+
+                  {/* Source Resume Drawer */}
+                  <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                        <FileText className="w-4 h-4 text-indigo-600" />
+                        <span>ACTIVE RESUME SOURCE TEXT ({localAnalysis.wordCount} words)</span>
+                      </div>
+                      <button
+                        onClick={() => setShowRawResumeToggle(!showRawResumeToggle)}
+                        className="text-xs text-indigo-600 hover:text-indigo-800 font-bold transition-colors"
+                      >
+                        {showRawResumeToggle ? 'Collapse Text' : 'View / Edit Resume Text'}
+                      </button>
+                    </div>
+
+                    {showRawResumeToggle && (
+                      <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <textarea
+                          rows={8}
+                          value={resumeText}
+                          onChange={(e) => setResumeText(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3.5 text-xs font-mono text-slate-800 focus:outline-none focus:border-indigo-500 leading-relaxed resize-y"
+                        />
+                        <div className="flex justify-end">
+                          <button
+                            onClick={handleStartScan}
+                            disabled={analyzing}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>Re-Run Analysis With Edited Text</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ─── TAB: DASHBOARD ─── */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8">
+              {/* Welcome Banner */}
+              <div className="p-8 rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                  <span className="text-xs uppercase font-bold tracking-widest text-indigo-200">
+                    Candidate Profile
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black mt-1">
+                    Welcome back, Ruthik!
+                  </h1>
+                  <p className="text-xs sm:text-sm text-indigo-100 mt-1 max-w-xl">
+                    Your resume is tuned for Java Full-Stack roles. Track your ATS score, optimize bullets, and complete learning roadmap levels.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('analyze')}
+                  className="px-5 py-2.5 rounded-2xl bg-white text-indigo-600 font-extrabold text-xs shadow-sm hover:bg-indigo-50 transition-all shrink-0 flex items-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Scan Resume</span>
+                </button>
+              </div>
+
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+                  <span className="text-xs font-semibold text-slate-500">Current ATS Score</span>
+                  <div className="text-2xl font-black text-indigo-600">
+                    {aiReport?.atsScore ?? localAnalysis.overallScore}%
+                  </div>
+                  <span className="text-[11px] text-emerald-600 font-bold">● High Placement Fit</span>
                 </div>
 
-                {/* Callout to Visual Live Editor */}
-                <div className="p-5 rounded-2xl bg-gradient-to-r from-primary-950/40 via-dark-800 to-indigo-950/30 border border-primary-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="space-y-1 text-center sm:text-left">
-                    <h4 className="text-sm font-bold text-white flex items-center justify-center sm:justify-start gap-2">
-                      <Sparkles className="w-4 h-4 text-primary-400" />
-                      <span>Ready to format and print your optimized resume?</span>
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      Transfer your AI improvements straight into an ATS-compliant A4 visual layout with color themes and 1-click PDF export.
-                    </p>
+                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+                  <span className="text-xs font-semibold text-slate-500">Keywords Matched</span>
+                  <div className="text-2xl font-black text-slate-900">
+                    {localAnalysis.matchedKeywords.length}
                   </div>
-                  <button
-                    onClick={() => setActiveTab('editor')}
-                    className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-500/25 transition-all"
-                  >
-                    <span>Open Visual Resume Editor</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <span className="text-[11px] text-slate-400">Skills detected in resume</span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+                  <span className="text-xs font-semibold text-slate-500">Action Verbs Found</span>
+                  <div className="text-2xl font-black text-purple-600">
+                    {localAnalysis.actionVerbScore}%
+                  </div>
+                  <span className="text-[11px] text-purple-600 font-medium">Strong verb density</span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-1">
+                  <span className="text-xs font-semibold text-slate-500">Roadmap Progress</span>
+                  <div className="text-2xl font-black text-emerald-600">
+                    100%
+                  </div>
+                  <span className="text-[11px] text-emerald-600 font-medium">5/5 Levels Completed</span>
                 </div>
               </div>
-            )}
-          </>
-        )}
 
-        {/* ─── TAB 2: VISUAL RESUME CANVAS EDITOR ─── */}
-        {activeTab === 'editor' && (
-          <ResumeLiveEditor
-            profile={profile}
-            setProfile={setProfile}
-            apiKey={apiKey}
-          />
-        )}
+              {/* Quick Launch Shortcuts */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div 
+                  onClick={() => setActiveTab('analyze')}
+                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
+                >
+                  <div className="h-10 w-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Analyze Resume (ATS Scanner)</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Upload a PDF or paste text to test ATS compatibility against 7 target role presets.
+                  </p>
+                </div>
 
-        {/* ─── TAB 3: CAREER ROADMAPS ─── */}
-        {activeTab === 'roadmap' && (
-          <RoadmapView />
-        )}
+                <div 
+                  onClick={() => setActiveTab('create')}
+                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
+                >
+                  <div className="h-10 w-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-100 group-hover:scale-110 transition-transform">
+                    <Edit3 className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Visual Live Resume Editor</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    WYSIWYG A4 paper canvas with color themes and 1-click browser print / PDF export.
+                  </p>
+                </div>
 
-      </main>
+                <div 
+                  onClick={() => setActiveTab('roadmaps')}
+                  className="p-6 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-3 group"
+                >
+                  <div className="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 group-hover:scale-110 transition-transform">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-extrabold text-slate-900 text-sm">Java Placement Roadmap Tree</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    5-level structured curriculum covering Java setup, OOP, Collections, Spring Boot, and Docker.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── TAB: CREATE RESUME (Visual Editor) ─── */}
+          {activeTab === 'create' && (
+            <ResumeLiveEditor
+              profile={profile}
+              setProfile={setProfile}
+              apiKey={apiKey}
+            />
+          )}
+
+          {/* ─── TAB: MODIFY RESUME (Bullets & Keywords) ─── */}
+          {activeTab === 'modify' && (
+            <div className="space-y-6">
+              <KeywordGapCard
+                matchedKeywords={localAnalysis.matchedKeywords}
+                missingKeywords={aiReport?.missingSkills && aiReport.missingSkills.length > 0 ? aiReport.missingSkills : localAnalysis.missingKeywords}
+                onAddKeyword={handleAddKeyword}
+              />
+
+              <BulletPointOptimizer
+                bullets={localAnalysis.bulletPoints}
+                apiKey={apiKey}
+                onReplaceBullet={handleReplaceBullet}
+              />
+            </div>
+          )}
+
+          {/* ─── TAB: HISTORY & SETTINGS ─── */}
+          {(activeTab === 'history' || activeTab === 'settings') && (
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/90 shadow-sm space-y-4 max-w-2xl mx-auto text-center py-12">
+              <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-extrabold text-slate-900">
+                {activeTab === 'history' ? 'Resume Scan History' : 'Application Settings'}
+              </h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                {activeTab === 'history'
+                  ? 'Past resume analyses and exported files are saved locally in your browser session for quick access.'
+                  : 'ResumeBoost AI is operating in active client-side mode with Google Gemini 3.5 integration.'}
+              </p>
+              <div className="pt-2">
+                <button
+                  onClick={() => setIsExportOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all"
+                >
+                  Export Current Resume
+                </button>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
 
       {/* Export Modal */}
       <ExportModal
@@ -405,22 +552,6 @@ export default function App() {
         onClose={() => setIsExportOpen(false)}
         resumeText={resumeText}
       />
-
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
-        <p>
-          ResumeBoost AI — Created by{' '}
-          <a
-            href="https://github.com/ruthikph2-jpg"
-            target="_blank"
-            rel="noreferrer"
-            className="text-primary-400 hover:underline font-semibold"
-          >
-            Ruthik ph
-          </a>{' '}
-          • B.Tech CSE • All Rights Reserved
-        </p>
-      </footer>
     </div>
   );
 }

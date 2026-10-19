@@ -33,9 +33,9 @@ export const BulletPointOptimizer: React.FC<BulletPointOptimizerProps> = ({
 
   if (bullets.length === 0) {
     return (
-      <div className="glass-card rounded-2xl p-6 glow-effect border border-slate-800 text-center py-10">
-        <Sparkles className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-        <p className="text-sm text-slate-400">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-sm text-center py-10">
+        <Sparkles className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+        <p className="text-sm text-slate-500">
           No bullet points detected in your resume yet. Add bullets starting with (•, -, or *) to optimize them.
         </p>
       </div>
@@ -43,90 +43,96 @@ export const BulletPointOptimizer: React.FC<BulletPointOptimizerProps> = ({
   }
 
   return (
-    <div className="glass-card rounded-2xl p-6 glow-effect border border-slate-800">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm space-y-5">
+      <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-sm text-slate-100 tracking-wide flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary-400" />
-            AI BULLET POINT OPTIMIZER (GOOGLE XYZ FORMULA)
+          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            AI Bullet Point Optimizer (Google XYZ Formula)
           </h3>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500 mt-0.5">
             Transforms weak descriptions into high-impact, metric-driven achievements
           </p>
         </div>
-        <span className="text-xs text-primary-400 font-mono">
+        <span className="text-xs text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
           {bullets.length} bullets analyzed
         </span>
       </div>
 
       <div className="space-y-4">
-        {bullets.map((b) => {
-          const improvedText = customImprovedMap[b.id] || b.improved;
-          const isLoading = loadingMap[b.id];
+        {bullets.map((bullet) => {
+          const currentImproved = customImprovedMap[bullet.id] || bullet.improved;
+          const isLoading = loadingMap[bullet.id];
 
           return (
             <div
-              key={b.id}
-              className="p-4 rounded-xl bg-dark-900/90 border border-slate-800 hover:border-slate-700/80 transition-all space-y-3"
+              key={bullet.id}
+              className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 border border-slate-200 space-y-3 transition-all hover:border-slate-300"
             >
-              {/* Header Status */}
-              <div className="flex items-center justify-between gap-2">
+              {/* Status Header */}
+              <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                    b.score >= 80 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                    b.score >= 50 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' :
-                    'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                  }`}>
-                    Score: {b.score}/100
-                  </span>
-                  
-                  <div className="flex items-center gap-1.5 text-[10px]">
-                    <span className={`flex items-center gap-1 ${b.hasActionVerb ? 'text-emerald-400' : 'text-slate-500'}`}>
-                      {b.hasActionVerb ? <Check className="w-3 h-3" /> : '○'} Action Verb
+                  {bullet.hasMetrics ? (
+                    <span className="flex items-center gap-1 text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Contains Metrics
                     </span>
-                    <span className="text-slate-600">•</span>
-                    <span className={`flex items-center gap-1 ${b.hasMetrics ? 'text-emerald-400' : 'text-slate-500'}`}>
-                      {b.hasMetrics ? <Check className="w-3 h-3" /> : '○'} Quantifiable Metrics
+                  ) : (
+                    <span className="flex items-center gap-1 text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Missing Quantifiable Metrics
                     </span>
-                  </div>
+                  )}
+                  {bullet.hasActionVerb && (
+                    <span className="flex items-center gap-1 text-indigo-700 font-semibold bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                      Strong Action Verb
+                    </span>
+                  )}
                 </div>
 
                 <button
-                  onClick={() => handleBoost(b)}
+                  onClick={() => handleBoost(bullet)}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary-600/20 hover:bg-primary-600/30 text-primary-300 border border-primary-500/30 transition-all disabled:opacity-50"
+                  className="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                  title="Generate alternative AI rewrite"
                 >
                   <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
-                  <span>{isLoading ? 'Enhancing...' : 'Re-Boost AI'}</span>
+                  <span>{isLoading ? 'Re-optimizing...' : 'Regenerate'}</span>
                 </button>
               </div>
 
-              {/* Original */}
-              <div className="p-2.5 rounded-lg bg-dark-800/60 border border-slate-800 text-xs font-mono text-slate-300 leading-relaxed">
-                <span className="text-slate-500 select-none mr-2">BEFORE:</span>
-                {b.original}
+              {/* Original Bullet */}
+              <div className="text-xs text-slate-500 bg-white p-3 rounded-xl border border-slate-200/80 leading-relaxed">
+                <span className="font-bold text-slate-700 uppercase text-[10px] block mb-0.5 tracking-wider">
+                  Original:
+                </span>
+                {bullet.original}
               </div>
 
-              {/* Improved */}
-              <div className="p-2.5 rounded-lg bg-primary-950/20 border border-primary-500/30 text-xs font-mono text-primary-200 leading-relaxed flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <span className="text-primary-400 font-bold select-none mr-2">AI REWRITE:</span>
-                  <span>{improvedText}</span>
+              {/* Improved Bullet */}
+              <div className="text-xs text-slate-800 bg-indigo-50/40 p-3.5 rounded-xl border border-indigo-100 leading-relaxed font-medium">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-indigo-700 uppercase text-[10px] flex items-center gap-1 tracking-wider">
+                    <Sparkles className="w-3 h-3" />
+                    AI XYZ Optimized:
+                  </span>
+                  <span className="text-[10px] text-indigo-600 font-medium">
+                    Google XYZ Formula
+                  </span>
                 </div>
-                
-                <button
-                  onClick={() => onReplaceBullet(b.original, improvedText)}
-                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-md shadow-primary-500/20 transition-all"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Accept Rewrite</span>
-                </button>
+                {currentImproved}
               </div>
 
-              {/* Diagnostic Feedback */}
-              <p className="text-[11px] text-slate-400 italic">
-                💡 {b.feedback}
-              </p>
+              {/* 1-Click Accept */}
+              <div className="flex justify-end pt-1">
+                <button
+                  onClick={() => onReplaceBullet(bullet.original, currentImproved)}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center gap-1.5 transition-all"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Apply to Resume</span>
+                </button>
+              </div>
             </div>
           );
         })}
