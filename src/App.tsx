@@ -56,7 +56,7 @@ export default function App() {
   const [selectedRole, setSelectedRole] = useState('java_backend');
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
   const [jobText, setJobText] = useState(DEFAULT_JOB);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
