@@ -1,7 +1,8 @@
 # 🎓 Placement Interview Guide — ResumeBoost AI
 
 > **A complete cheat-sheet and technical talking points for your campus placement interviews.**  
-> Use this guide when technical interviewers, hiring managers, and recruiters ask you about **ResumeBoost AI**.
+> Use this guide when technical interviewers, hiring managers, and recruiters ask you about **ResumeBoost AI**.  
+> **Live Demo URL**: [https://resume-boost-ai-ruthik.vercel.app](https://resume-boost-ai-ruthik.vercel.app)
 
 ---
 

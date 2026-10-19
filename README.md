@@ -1,13 +1,22 @@
 # 🚀 ResumeBoost AI — Next-Gen AI ATS Resume Optimizer & Builder
 
-> **Transform your resume into an interview magnet.** ResumeBoost AI is an advanced, high-performance ATS Scanner, PDF Parser, Keyword Gap Analyzer, Google XYZ Bullet Point Optimizer, Visual Live Resume Editor, and Placement Career Roadmap portal.
+> **Transform your resume into an interview magnet.** ResumeBoost AI is an advanced, high-performance ATS Scanner, PDF Parser, Tesseract OCR Engine, Keyword Gap Analyzer, Google XYZ Bullet Point Optimizer, Visual Live Resume Editor, Embedded SQLite Database, and Placement Career Roadmap portal.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-resume--boost--ai--ruthik.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://resume-boost-ai-ruthik.vercel.app)
 [![GitHub](https://img.shields.io/badge/Author-ruthikph2--jpg-6366F1?logo=github)](https://github.com/ruthikph2-jpg)
 [![Repository](https://img.shields.io/badge/GitHub-ResumeBoost--AI-10B981?logo=github)](https://github.com/ruthikph2-jpg/ResumeBoost-AI)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com)
-[![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite)](https://vitejs.dev)
+[![SQLite](https://img.shields.io/badge/SQLite-WASM-003B57?logo=sqlite)](https://sqlite.org)
+
+---
+
+## 🌐 Live Application Demo
+
+🔗 **[https://resume-boost-ai-ruthik.vercel.app](https://resume-boost-ai-ruthik.vercel.app)**
+
+*Experience live ATS scoring, Google XYZ bullet rewriting, in-browser PDF parsing, Tesseract OCR image recognition, and interactive Java roadmaps right in your browser!*
 
 ---
 
@@ -24,9 +33,12 @@
     - **Technical Product Manager** (Roadmaps, User Stories, Agile)
 
 - ⚡ **In-Browser Client-Side PDF Parsing**:
-  - Direct PDF text extraction using `pdfjs-dist` inside the browser without requiring slow external server cold starts.
-  - Drag-and-drop file upload zone supporting `.pdf` and `.txt` files up to 10MB.
+  - Direct PDF text extraction using `pdfjs-dist` inside the browser without requiring external server cold starts.
+  - Drag-and-drop file upload zone supporting `.pdf`, `.txt`, and image files up to 10MB.
   - 1-click test button to evaluate Ruthik's Sample Java Full-Stack Resume instantly.
+
+- 🔍 **Tesseract OCR Fallback for Scanned Resumes & Photos**:
+  - Automatically runs client-side optical character recognition via `tesseract.js` on image uploads (`.png`, `.jpg`, `.jpeg`, `.webp`) and flat scanned PDFs.
 
 - 📊 **Animated Multi-Stage AI Scanning Feedback**:
   - Progress bar dynamically ticks from 0% to 100% through distinct analysis phases:
@@ -53,24 +65,32 @@
 - 📝 **Live Visual A4 Canvas Resume Editor**:
   - Full-featured WYSIWYG A4 resume canvas with live preview.
   - Edit personal details, summary, technical stack, experience, and education.
-  - Color theme customization (Indigo, Emerald, Violet, Cyan, Slate).
+  - Color theme customization (Indigo, Emerald, Cyan).
   - 1-click PDF download / browser print layout (`@media print`).
 
+- 🗄️ **Embedded SQLite Database (WebAssembly)**:
+  - Persistent relational history logging powered by `sql.js`.
+  - Automatically tracks scan records, dates, target roles, and ATS scores.
+  - Clean **Scan History** dashboard with live search and filtering.
+
 - 🗺️ **Placement Career Roadmaps**:
-  - Interactive career path checklists for Java Backend, Frontend, Cloud/DevOps, and Data Engineering.
-  - Level-by-level milestones from Core Fundamentals up to Mock Interviews and System Design.
+  - Interactive career path checklists for Java Backend, Frontend, and Data Science.
+  - Level-by-level milestones from Core Fundamentals up to System Design and Mock Interviews.
 
 ---
 
 ## 🛠 Tech Stack
 
 - **Frontend Framework**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom glassmorphism design system
+- **Styling**: Tailwind CSS with clean, modern sidebar architecture
 - **PDF Extraction**: `pdfjs-dist` (In-browser Web Worker)
+- **OCR Engine**: `tesseract.js` (Client-side WebAssembly OCR)
+- **Database**: `sql.js` (Embedded SQLite WebAssembly Engine)
+- **AI Integration**: Google Gemini 3.5 API with smart offline NLP fallback
 - **Icons**: Lucide React
 - **Notifications**: React Hot Toast
 - **Tooling & Bundler**: Vite & PostCSS
-- **AI Integration**: Google Gemini 1.5 API support + built-in offline NLP engine
+- **Deployment**: Vercel
 
 ---
 
@@ -96,21 +116,10 @@ Open [http://localhost:3001](http://localhost:3001) in your browser.
 
 ---
 
-## 🌐 Deploy to Vercel (1-Click Free Deployment)
+## 🎓 Placement Interview Preparation
 
-1. Ensure all changes are committed and pushed to your GitHub repository:
-   ```bash
-   git push origin main
-   ```
-2. Go to [https://vercel.com](https://vercel.com) and log in with your GitHub account (`ruthikph2-jpg`).
-3. Click **Add New...** → **Project**.
-4. Import your repository: **`ResumeBoost-AI`**.
-5. Configure Project:
-   - **Framework Preset**: `Vite`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-6. Click **Deploy**! 🚀
-7. Your app will be live on `https://resume-boost-ai-ruthik.vercel.app` in under 60 seconds!
+Looking for technical interview talking points, architectural diagrams, and model answers? Check out the complete placement guide:  
+👉 **[INTERVIEW_GUIDE.md](INTERVIEW_GUIDE.md)**
 
 ---
 
