@@ -30,6 +30,8 @@ export interface ScannerLandingProps {
   scanStage: string;
 }
 
+import { extractTextFromImage } from '../utils/ocrParser';
+
 export const ROLE_TEMPLATES: Record<string, { title: string; description: string }> = {
   java_backend: {
     title: 'Java & Spring Boot Developer',
@@ -111,18 +113,37 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
   };
 
   const processFile = async (file: File) => {
+    const isImage = file.type.startsWith('image/') || /\.(png|jpe?g|webp|bmp)$/i.test(file.name);
     const isPdf = file.name.endsWith('.pdf') || file.type === 'application/pdf';
-    const isTxt = file.name.endsWith('.txt') || file.type === 'text/plain';
+    const isTxt = file.name.endsWith('.txt') || file.name.endsWith('.md') || file.type === 'text/plain';
 
-    if (!isPdf && !isTxt) {
-      toast.error('Please upload a PDF or plain text resume file (.pdf, .txt)');
+    if (!isPdf && !isTxt && !isImage) {
+      toast.error('Please upload a PDF, Image (PNG/JPG), or Text resume file.');
       return;
     }
 
     const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
     setUploadedFile({ name: file.name, size: sizeFormatted });
 
-    if (isPdf) {
+    if (isImage) {
+      // 1. Image upload: Run Tesseract OCR directly
+      toast.loading('Analyzing image with Tesseract OCR engine...', { id: 'ocr-toast' });
+      try {
+        const text = await extractTextFromImage(file, (_pct, status) => {
+          toast.loading(status, { id: 'ocr-toast' });
+        });
+        if (text && text.trim().length > 30) {
+          setResumeText(text);
+          toast.success(`Successfully extracted text from ${file.name} via Tesseract OCR!`, { id: 'ocr-toast' });
+        } else {
+          toast.error('Tesseract OCR could not detect readable text from this image.', { id: 'ocr-toast' });
+        }
+      } catch (err) {
+        console.error('Tesseract OCR Error:', err);
+        toast.error('Failed to run Tesseract OCR on image.', { id: 'ocr-toast' });
+      }
+    } else if (isPdf) {
+      // 2. PDF upload: Extract text with pdfjs-dist
       toast.loading('Parsing PDF text in browser...', { id: 'pdf-toast' });
       try {
         const text = await extractTextFromPdf(file);
@@ -130,13 +151,14 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
           setResumeText(text);
           toast.success(`Successfully parsed ${file.name}`, { id: 'pdf-toast' });
         } else {
-          toast.error('Could not extract readable text from this PDF (it might be scanned).', { id: 'pdf-toast' });
+          toast.error('PDF appears to be a scanned image with no embedded text. Tip: Upload as a PNG/JPG image to use Tesseract OCR!', { id: 'pdf-toast', duration: 5000 });
         }
       } catch (err) {
         console.error(err);
         toast.error('Failed to parse PDF', { id: 'pdf-toast' });
       }
     } else {
+      // 3. Text or Markdown upload
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result as string;
@@ -260,7 +282,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
               <FileUp className="w-4 h-4 text-emerald-600" />
-              <span>Step 2: Upload Your Resume (PDF / TXT)</span>
+              <span>Step 2: Upload Your Resume (PDF / Image / TXT)</span>
             </label>
             <button
               onClick={() => setShowDirectPaste(!showDirectPaste)}
@@ -280,7 +302,7 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                 processFile(e.target.files[0]);
               }
             }}
-            accept=".pdf,.txt,.md"
+            accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.md"
             className="hidden"
           />
 
@@ -345,19 +367,24 @@ export const ScannerLanding: React.FC<ScannerLandingProps> = ({
                     Drag and drop your resume file here
                   </div>
                   <div className="text-xs text-slate-500">
-                    Supports <span className="text-slate-800 font-semibold">PDF</span> and <span className="text-slate-800 font-semibold">TXT</span> files up to 10MB
+                    Supports <span className="text-slate-800 font-semibold">PDF</span>, <span className="text-slate-800 font-semibold">Images (PNG/JPG via Tesseract OCR)</span>, and <span className="text-slate-800 font-semibold">TXT</span> files
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    fileInputRef.current?.click();
-                  }}
-                  className="mt-1 px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
-                >
-                  Browse Files
-                </button>
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      fileInputRef.current?.click();
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition-all"
+                  >
+                    Browse Files
+                  </button>
+                  <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                    Tesseract OCR Active
+                  </span>
+                </div>
               </div>
             )}
           </div>
