@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { Navbar } from './components/Navbar';
-import { ResumeUploader } from './components/ResumeUploader';
-import { JobMatcher } from './components/JobMatcher';
+import { ScannerLanding, ROLE_TEMPLATES } from './components/ScannerLanding';
 import { AtsScoreCard } from './components/AtsScoreCard';
 import { KeywordGapCard } from './components/KeywordGapCard';
 import { BulletPointOptimizer } from './components/BulletPointOptimizer';
@@ -12,7 +11,18 @@ import { ExportModal } from './components/ExportModal';
 import { runGeminiAnalysis } from './utils/aiAnalysisService';
 import { analyzeResume } from './utils/atsAnalyzer';
 import { GeminiAtsReport, ParsedProfile } from './types';
-import { Download, Sparkles, AlertCircle, Loader2, CheckCircle2, Award, ArrowRight } from 'lucide-react';
+import { 
+  Download, 
+  Sparkles, 
+  AlertCircle, 
+  CheckCircle2, 
+  ArrowRight, 
+  ArrowLeft, 
+  Edit3, 
+  Compass, 
+  RotateCcw,
+  FileText
+} from 'lucide-react';
 
 const DEFAULT_RESUME = `Ruthik ph
 B.Tech Computer Science & Engineering | Java Full Stack Developer
@@ -38,22 +48,20 @@ BugShield - AI Bug Detector & Auto-Fixer
 • Deployed full stack application on Docker and cloud hosting supporting concurrent user analyses.
 `;
 
-const DEFAULT_JOB = `Java Backend & Microservices Developer
-We are looking for a motivated Java Developer to build reliable, high-performance web applications and REST APIs.
-Requirements:
-- Strong knowledge of Java, Spring Boot, and relational databases (PostgreSQL/MySQL).
-- Experience with RESTful APIs, Docker, and Git.
-- Exposure to frontend frameworks like React is a plus.
-- Solid understanding of Data Structures, Algorithms (DSA), and Object-Oriented Design.
-- Passion for writing clean code and unit tests with JUnit.`;
+const DEFAULT_JOB = ROLE_TEMPLATES.java_backend.description;
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'analysis' | 'editor' | 'roadmap'>('analysis');
+  const [scannerView, setScannerView] = useState<'landing' | 'results'>('landing');
+  const [selectedRole, setSelectedRole] = useState('java_backend');
   const [resumeText, setResumeText] = useState(DEFAULT_RESUME);
   const [jobText, setJobText] = useState(DEFAULT_JOB);
   const [apiKey, setApiKey] = useState('');
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanStage, setScanStage] = useState('');
+  const [showRawResumeToggle, setShowRawResumeToggle] = useState(false);
 
   // Gemini AI Report State
   const [aiReport, setAiReport] = useState<GeminiAtsReport | null>(null);
@@ -76,26 +84,59 @@ export default function App() {
   // Local rule-based analyzer for detailed bullets
   const localAnalysis = analyzeResume(resumeText, jobText);
 
-  // Trigger analysis automatically on first load or when user clicks
-  const triggerAiAnalysis = async () => {
+  // Trigger analysis with progress animation
+  const handleStartScan = async () => {
+    if (!resumeText.trim()) {
+      toast.error('Please upload or paste a resume first.');
+      return;
+    }
+
     setAnalyzing(true);
+    setScanProgress(10);
+    setScanStage('Parsing resume document structure...');
+
+    const progressTimer = setInterval(() => {
+      setScanProgress((prev) => {
+        if (prev < 35) {
+          setScanStage('Extracting technical competencies & project impact...');
+          return prev + 12;
+        }
+        if (prev < 70) {
+          setScanStage('Matching against role requirements with Gemini AI...');
+          return prev + 10;
+        }
+        if (prev < 90) {
+          setScanStage('Generating Google XYZ bullet improvements & ATS metrics...');
+          return prev + 6;
+        }
+        return prev;
+      });
+    }, 350);
+
     try {
       const report = await runGeminiAnalysis(resumeText, jobText, apiKey);
+      clearInterval(progressTimer);
+      setScanProgress(100);
+      setScanStage('Analysis complete! Preparing ATS report...');
       setAiReport(report);
       if (report.parsedProfile) {
         setProfile(report.parsedProfile);
       }
-      toast.success('AI ATS evaluation complete!');
+      setTimeout(() => {
+        setAnalyzing(false);
+        setScannerView('results');
+        toast.success('AI ATS evaluation complete!');
+      }, 500);
     } catch {
-      toast.error('Analysis failed, using local metrics.');
-    } finally {
-      setAnalyzing(false);
+      clearInterval(progressTimer);
+      setScanProgress(100);
+      setTimeout(() => {
+        setAnalyzing(false);
+        setScannerView('results');
+        toast.error('Scan completed with offline rule analyzer.');
+      }, 500);
     }
   };
-
-  useEffect(() => {
-    triggerAiAnalysis();
-  }, []); // Run on initial mount
 
   // Handle adding missing keywords to skills section
   const handleAddKeyword = (kw: string) => {
@@ -142,137 +183,204 @@ export default function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
-        {/* Hero Banner */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-primary-950/40 via-dark-800 to-dark-800 border border-primary-500/20">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-primary-500/10 text-primary-400 border border-primary-500/20 mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Gemini AI-Powered ATS Resume Portal</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              AI ATS Scoring, Visual Editor & Placement Roadmaps
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
-              Upload your resume PDF, analyze ATS keyword gaps with Gemini AI, customize templates in the visual editor, and follow structured career pathways.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={triggerAiAnalysis}
-              disabled={analyzing}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-500/25 transition-all disabled:opacity-50"
-            >
-              {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              <span>{analyzing ? 'Analyzing with AI...' : 'Run AI ATS Scan'}</span>
-            </button>
-
-            <button
-              onClick={() => setIsExportOpen(true)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-dark-700 hover:bg-dark-600 border border-slate-600 text-slate-200 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              <span>Export</span>
-            </button>
-          </div>
-        </div>
-
         {/* ─── TAB 1: ATS SCANNER & ANALYZER ─── */}
         {activeTab === 'analysis' && (
-          <div className="space-y-6">
-            {/* ATS Score Overview Card */}
-            <AtsScoreCard
-              analysis={{
-                ...localAnalysis,
-                overallScore: aiReport?.atsScore ?? localAnalysis.overallScore,
-                matchScore: aiReport?.matchScore ?? localAnalysis.matchScore,
-              }}
-            />
-
-            {/* AI Insights & Summary */}
-            {aiReport && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* AI Strengths */}
-                <div className="p-4 rounded-xl bg-dark-800/80 border border-emerald-500/20 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>AI DETECTED STRENGTHS</span>
+          <>
+            {scannerView === 'landing' ? (
+              <ScannerLanding
+                selectedRole={selectedRole}
+                setSelectedRole={setSelectedRole}
+                jobText={jobText}
+                setJobText={setJobText}
+                resumeText={resumeText}
+                setResumeText={setResumeText}
+                onStartScan={handleStartScan}
+                analyzing={analyzing}
+                scanProgress={scanProgress}
+                scanStage={scanStage}
+              />
+            ) : (
+              <div className="space-y-6 animate-fade-in">
+                {/* Top Action Bar in Results Mode */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-dark-800/80 border border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setScannerView('landing')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Scan Another Resume</span>
+                    </button>
+                    <div className="text-xs text-slate-400">
+                      Target Role:{' '}
+                      <span className="font-semibold text-primary-300">
+                        {ROLE_TEMPLATES[selectedRole]?.title || 'Custom Role'}
+                      </span>
+                    </div>
                   </div>
-                  <ul className="space-y-1 text-xs text-slate-300">
-                    {aiReport.strengths.map((str, i) => (
-                      <li key={i} className="flex items-start gap-1.5">
-                        <span className="text-emerald-400 mt-0.5">•</span>
-                        <span>{str}</span>
-                      </li>
-                    ))}
-                  </ul>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => setActiveTab('editor')}
+                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-md shadow-primary-500/20 transition-all"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>Open Live Resume Editor</span>
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('roadmap')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
+                    >
+                      <Compass className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Career Roadmap</span>
+                    </button>
+                    <button
+                      onClick={() => setIsExportOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-dark-700 hover:bg-dark-600 text-slate-200 border border-slate-600 transition-colors"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Export</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* AI Improvements */}
-                <div className="p-4 rounded-xl bg-dark-800/80 border border-amber-500/20 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>CRITICAL ATS IMPROVEMENTS</span>
+                {/* ATS Score Overview Card */}
+                <AtsScoreCard
+                  analysis={{
+                    ...localAnalysis,
+                    overallScore: aiReport?.atsScore ?? localAnalysis.overallScore,
+                    matchScore: aiReport?.matchScore ?? localAnalysis.matchScore,
+                  }}
+                />
+
+                {/* AI Summary Banner if present */}
+                {aiReport?.summary && (
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-primary-950/30 to-dark-800 border border-primary-500/20">
+                    <div className="flex items-center gap-2 text-xs font-bold text-primary-300 mb-1">
+                      <Sparkles className="w-4 h-4 text-primary-400" />
+                      <span>AI EXECUTIVE SUMMARY & ATS EVALUATION</span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      {aiReport.summary}
+                    </p>
                   </div>
-                  <ul className="space-y-1 text-xs text-slate-300">
-                    {aiReport.improvements.map((imp, i) => (
-                      <li key={i} className="flex items-start gap-1.5">
-                        <span className="text-amber-400 mt-0.5">•</span>
-                        <span>{imp}</span>
-                      </li>
-                    ))}
-                  </ul>
+                )}
+
+                {/* AI Insights & Diagnostics */}
+                {aiReport && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* AI Strengths */}
+                    <div className="p-5 rounded-xl bg-dark-800/80 border border-emerald-500/20 space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>AI DETECTED STRENGTHS</span>
+                      </div>
+                      <ul className="space-y-2 text-xs text-slate-300">
+                        {aiReport.strengths.map((str, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-emerald-400 font-bold mt-0.5">•</span>
+                            <span>{str}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* AI Improvements */}
+                    <div className="p-5 rounded-xl bg-dark-800/80 border border-amber-500/20 space-y-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-amber-400">
+                        <AlertCircle className="w-4 h-4" />
+                        <span>CRITICAL ATS IMPROVEMENTS</span>
+                      </div>
+                      <ul className="space-y-2 text-xs text-slate-300">
+                        {aiReport.improvements.map((imp, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-amber-400 font-bold mt-0.5">•</span>
+                            <span>{imp}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2-Column Core Insights: Keyword Gap + Bullet Optimizer */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                  
+                  {/* Left: Keyword Gap Card */}
+                  <KeywordGapCard
+                    matchedKeywords={localAnalysis.matchedKeywords}
+                    missingKeywords={aiReport?.missingSkills && aiReport.missingSkills.length > 0 ? aiReport.missingSkills : localAnalysis.missingKeywords}
+                    onAddKeyword={handleAddKeyword}
+                  />
+
+                  {/* Right: Google XYZ Bullet Point Optimizer */}
+                  <BulletPointOptimizer
+                    bullets={localAnalysis.bulletPoints}
+                    apiKey={apiKey}
+                    onReplaceBullet={handleReplaceBullet}
+                  />
+
+                </div>
+
+                {/* Collapsible Raw Resume Preview & Quick Edit */}
+                <div className="p-4 rounded-xl bg-dark-800/60 border border-slate-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                      <FileText className="w-4 h-4 text-primary-400" />
+                      <span>ACTIVE RESUME SOURCE TEXT ({localAnalysis.wordCount} words)</span>
+                    </div>
+                    <button
+                      onClick={() => setShowRawResumeToggle(!showRawResumeToggle)}
+                      className="text-xs text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                    >
+                      {showRawResumeToggle ? 'Collapse Text' : 'View / Edit Resume Text'}
+                    </button>
+                  </div>
+
+                  {showRawResumeToggle && (
+                    <div className="space-y-2 pt-2 border-t border-slate-800">
+                      <textarea
+                        rows={8}
+                        value={resumeText}
+                        onChange={(e) => setResumeText(e.target.value)}
+                        className="w-full bg-dark-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-primary-500 leading-relaxed resize-y"
+                      />
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleStartScan}
+                          disabled={analyzing}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white transition-all"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Re-Run Analysis With Edited Text</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Callout to Visual Live Editor */}
+                <div className="p-5 rounded-2xl bg-gradient-to-r from-primary-950/40 via-dark-800 to-indigo-950/30 border border-primary-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h4 className="text-sm font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+                      <Sparkles className="w-4 h-4 text-primary-400" />
+                      <span>Ready to format and print your optimized resume?</span>
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Transfer your AI improvements straight into an ATS-compliant A4 visual layout with color themes and 1-click PDF export.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('editor')}
+                    className="shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-primary-600 hover:bg-primary-500 text-white shadow-lg shadow-primary-500/25 transition-all"
+                  >
+                    <span>Open Visual Resume Editor</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             )}
-
-            {/* 2-Column Core Workspace */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              
-              {/* Left Column: Input (Resume + Job) */}
-              <div className="space-y-6">
-                <ResumeUploader
-                  resumeText={resumeText}
-                  setResumeText={setResumeText}
-                  wordCount={localAnalysis.wordCount}
-                />
-                <JobMatcher
-                  jobText={jobText}
-                  setJobText={setJobText}
-                />
-              </div>
-
-              {/* Right Column: Keyword Gap & Bullet Optimizer */}
-              <div className="space-y-6">
-                <KeywordGapCard
-                  matchedKeywords={localAnalysis.matchedKeywords}
-                  missingKeywords={aiReport?.missingSkills && aiReport.missingSkills.length > 0 ? aiReport.missingSkills : localAnalysis.missingKeywords}
-                  onAddKeyword={handleAddKeyword}
-                />
-
-                <BulletPointOptimizer
-                  bullets={localAnalysis.bulletPoints}
-                  apiKey={apiKey}
-                  onReplaceBullet={handleReplaceBullet}
-                />
-              </div>
-
-            </div>
-
-            {/* Link to Editor Callout */}
-            <div className="p-4 rounded-xl bg-primary-950/20 border border-primary-500/30 flex items-center justify-between">
-              <div className="text-xs text-slate-300">
-                Ready to customize and format your resume for job applications?
-              </div>
-              <button
-                onClick={() => setActiveTab('editor')}
-                className="flex items-center gap-1.5 text-xs font-bold text-primary-300 hover:text-primary-200"
-              >
-                <span>Open Visual Resume Editor</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+          </>
         )}
 
         {/* ─── TAB 2: VISUAL RESUME CANVAS EDITOR ─── */}
