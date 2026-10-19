@@ -95,6 +95,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
             <Sparkles className="w-4 h-4" />
           </button>
         </div>
+        <div className="mt-2.5 px-1 text-[10px] text-slate-400 text-center font-medium">
+          © 2026 Ruthik ph. All Rights Reserved.
+        </div>
       </div>
     </aside>
   );

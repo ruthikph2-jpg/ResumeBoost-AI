@@ -568,6 +568,16 @@ export default function App() {
           )}
 
         </main>
+
+        {/* Footer with Copyright */}
+        <footer className="mt-auto py-5 text-center text-xs text-slate-400 border-t border-slate-200/80 bg-white/60">
+          <p className="font-semibold text-slate-600">
+            © 2026 Ruthik ph. All Rights Reserved. • Proprietary Software License
+          </p>
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            ResumeBoost AI — Intelligent ATS Resume Optimizer, Scanner & Placement Platform
+          </p>
+        </footer>
       </div>
 
       {/* Export Modal */}
