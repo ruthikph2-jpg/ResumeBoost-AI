@@ -180,7 +180,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
         <p>
-          ResumeForge AI — Created by{' '}
+          ResumeBoost AI — Created by{' '}
           <a
             href="https://github.com/ruthikph2-jpg"
             target="_blank"

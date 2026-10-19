@@ -1,6 +1,6 @@
-# ⚡ ResumeForge AI — Intelligent ATS Resume Optimizer
+# 🚀 ResumeBoost AI — Intelligent ATS Resume Optimizer
 
-> **Transform your resume into an interview magnet.** ResumeForge AI is an advanced ATS Scanner, Keyword Gap Analyzer, and Google XYZ Bullet Point Optimizer built for modern software developers.
+> **Transform your resume into an interview magnet.** ResumeBoost AI is an advanced ATS Scanner, Keyword Gap Analyzer, and Google XYZ Bullet Point Optimizer built for modern software developers.
 
 [![GitHub](https://img.shields.io/badge/Author-ruthikph2--jpg-6366F1?logo=github)](https://github.com/ruthikph2-jpg)
 [![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)](https://react.dev)
@@ -36,8 +36,8 @@
 
 ### 1. Clone the repository
 \`\`\`bash
-git clone https://github.com/ruthikph2-jpg/ResumeForge-AI.git
-cd ResumeForge-AI
+git clone https://github.com/ruthikph2-jpg/ResumeBoost-AI.git
+cd ResumeBoost-AI
 \`\`\`
 
 ### 2. Install dependencies
